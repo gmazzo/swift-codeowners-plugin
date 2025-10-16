@@ -1,7 +1,7 @@
 import XCTest
 @testable import Demo
 
-class SampleTest: XCTestCase {
+class SomeClassTest: XCTestCase {
     func testExample() {
         XCTAssertEqual("myValue", Foo.fileName)
     }

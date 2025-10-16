@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.1
 
 import PackageDescription
 
@@ -9,8 +9,8 @@ let package = Package(
         .iOS(.v13)
     ],
     products: [
-        .plugin(name: "swift-codeowners-plugin", targets: ["CodeOwnersPlugin"]),
-        .executable(name: "swift-codeowners-tool", targets: ["CodeOwnersTool"])
+        .plugin(name: "CodeOwnersPlugin", targets: ["CodeOwnersPlugin"]),
+        .executable(name: "CodeOwnersTool", targets: ["CodeOwnersTool"])
     ],
     targets: [
         .plugin(
@@ -21,6 +21,15 @@ let package = Package(
         .executableTarget(
             name: "CodeOwnersTool",
             dependencies: []
+        ),
+        .target(
+            name: "Demo",
+            plugins: ["CodeOwnersPlugin"]
+        ),
+        .testTarget(
+            name: "DemoTests",
+            dependencies: ["Demo"]
         )
-    ]
+    ],
+    swiftLanguageModes: [.v6, .v5]
 )
