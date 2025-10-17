@@ -22,9 +22,9 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var codeOwnersFile: URL =
         FileManager.default.findCodeOwnersFile(atRoot: FileManager.default.gitRoot ?? FileManager.default.pwd)
 
-    @Option(name: .shortAndLong, help: "Output directory where the generated files are written.")
-    var outputDirectory: URL =
-        FileManager.default.pwd.appendingPathComponent("GeneratedSources")
+    @Option(name: .shortAndLong, help: "The path to store the generated output CodeOwners attribution file")
+    var outputFile: URL =
+        FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
     func run() throws {
         let fm = FileManager.default
@@ -39,30 +39,47 @@ struct CodeOwnersTool: AsyncParsableCommand {
         let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
         let codeOwners = CodeOwners.parse(file: codeOwnersContent)
 
-        try fm.deleteRecursively(at: outputDirectory)
-        try fm.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+        var content =
+            """
+            import CodeOwnersCore
+
+            """
+
         try fm.walkFiles(at: sources) { source in
             let relativePath = source.relativePathTo(codeOwnersRoot)
-            let owners = codeOwners.codeOwner(pattern: relativePath)?.owners
-                .map { "\"\($0)\"" }
-                .joined(separator: ", ")
+            let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral).joined(separator: ", ")
 
-            let content = collectTypes(from: source).map { typeName in
-                """
-                extension \(typeName) : HasCodeOwners {
-                    var codeOwners: Set<String> = [\(owners ?? "")]
-                }
-                """
-            }.joined(separator: "\n\n")
+            for typeName in try collectTypes(from: source) {
+                content +=
+                    """
 
-            let baseName = source.deletingPathExtension().lastPathComponent
-            let file = outputDirectory.appendingPathComponent("\(baseName)+CodeOwners.swift")
-            try content.write(to: file, atomically: true, encoding: .utf8)
+                    extension \(typeName) : HasCodeOwners {
+                        func codeOwners() -> Set<String> { return [\(owners ?? "")] }
+                    }
+
+                    """
+            }
         }
+
+        try fm.createDirectory(at: outputFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try content.write(to: outputFile, atomically: true, encoding: .utf8)
+    }
+    
+    private func asLiteral(owner: Owner) -> String {
+        switch owner {
+            case .user(let userId):
+                switch userId {
+                case .userName(let name): return "\"\(name)\""
+                case .email(let email): return "\"\(email)\""
+                }
+            case .team(let teamId):
+                return "\"\(teamId.organization)/\(teamId.name)\""
+            }
     }
 
-    private func collectTypes(from source: URL) -> [String] {
-        let swiftFile = Parser.parse(source: source.absoluteString)
+    private func collectTypes(from source: URL) throws -> [String] {
+        let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
+        let swiftFile = Parser.parse(source: swiftFileContent)
         let collector = TypesCollector(viewMode: .sourceAccurate)
         collector.walk(swiftFile)
         return collector.types

@@ -16,14 +16,14 @@ struct CodeOwnersPlugin: BuildToolPlugin {
         }
 
         let tool = try context.tool(named: "CodeOwnersTool")
-        let outputDir = context.pluginWorkDirectoryURL.appendingPathComponent("GeneratedSources", isDirectory: true)
+        let outputFile = context.pluginWorkDirectoryURL.appendingPathComponent("CodeOwners.swift")
 
         return [.buildCommand(
             displayName: "CodeOwner attribution",
             executable: tool.url,
-            arguments: inputFiles.map(\.path) + ["--output-directory", outputDir.path],
+            arguments: inputFiles.map(\.path) + ["--output-file", outputFile.path],
             inputFiles: inputFiles,
-            outputFiles: [outputDir]
+            outputFiles: [outputFile]
         )]
     }
 

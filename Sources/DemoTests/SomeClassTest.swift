@@ -2,7 +2,13 @@ import XCTest
 @testable import Demo
 
 class SomeClassTest: XCTestCase {
-    func testExample() {
-        XCTAssertEqual("myValue", Foo.fileName)
+
+    func testOwnersOfFoo() {
+        XCTAssertEqual(["demo-devs"], Foo().codeOwners())
     }
+
+    func testOwnersOfBar() {
+        XCTAssertEqual(["demo-devs"], Bar().codeOwners())
+    }
+
 }
