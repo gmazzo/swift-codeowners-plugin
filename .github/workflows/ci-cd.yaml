@@ -1,0 +1,50 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  release:
+    types: [ published ]
+
+permissions:
+  checks: write
+  pull-requests: write
+
+jobs:
+  ci-cd:
+    name: CI/CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup host
+        uses: ./.github/actions/setup-host
+      - name: Test & Build
+        run: swift test --parallel --xunit-output .build/test-results.xml --enable-code-coverage
+      - name: Publish Test Report
+        if: ${{ !cancelled() }}
+        uses: gmazzo/publish-report-annotations@v1
+        with:
+          checkName: Test Results
+          reports: .build/test-results.xml
+      - name: Coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  actionlint:
+    name: Validate Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Download actionlint
+        shell: bash
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      - name: Check workflow files
+        shell: bash
+        run: ./actionlint -color -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}%0A```%0A{{replace $err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:'
