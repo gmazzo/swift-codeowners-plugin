@@ -10,19 +10,21 @@ struct CodeOwnersPlugin: BuildToolPlugin {
             return []
         }
 
-        let tool = try context.tool(named: "CodeOwnersTool")
         let inputFiles = swiftTarget.sourceFiles(withSuffix: ".swift").map(\.url)
-        let outputDir = context.pluginWorkDirectoryURL
+        if (inputFiles.isEmpty) {
+            return []
+        }
 
-        return [
-            .buildCommand(
-                displayName: "CodeOwnership attribution for Swift files",
-                executable: tool.url,
-                arguments: inputFiles.map(\.absoluteString) + ["--output", outputDir.absoluteString],
-                inputFiles: inputFiles,
-                outputFiles: inputFiles.map { outputDir.appendingPathComponent("_" + $0.lastPathComponent) }
-            )
-        ]
+        let tool = try context.tool(named: "CodeOwnersTool")
+        let outputDir = context.pluginWorkDirectoryURL.appendingPathComponent("GeneratedSources", isDirectory: true)
+
+        return [.buildCommand(
+            displayName: "CodeOwner attribution",
+            executable: tool.url,
+            arguments: inputFiles.map(\.path) + ["--output-directory", outputDir.path],
+            inputFiles: inputFiles,
+            outputFiles: [outputDir]
+        )]
     }
 
 }

@@ -10,26 +10,24 @@ let package = Package(
     ],
     products: [
         .plugin(name: "CodeOwnersPlugin", targets: ["CodeOwnersPlugin"]),
-        .executable(name: "CodeOwnersTool", targets: ["CodeOwnersTool"])
+        .executable(name: "CodeOwnersTool", targets: ["CodeOwnersTool"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "602.0.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
+        .package(url: "https://github.com/mtj0928/swift-codeowners", from: "0.1.0")
     ],
     targets: [
-        .plugin(
-            name: "CodeOwnersPlugin",
-            capability: .buildTool(),
-            dependencies: ["CodeOwnersTool"]
-        ),
-        .executableTarget(
-            name: "CodeOwnersTool",
-            dependencies: []
-        ),
-        .target(
-            name: "Demo",
-            plugins: ["CodeOwnersPlugin"]
-        ),
-        .testTarget(
-            name: "DemoTests",
-            dependencies: ["Demo"]
-        )
+        .plugin(name: "CodeOwnersPlugin", capability: .buildTool(), dependencies: ["CodeOwnersTool"]),
+        .executableTarget(name: "CodeOwnersTool", dependencies: [
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftParser", package: "swift-syntax"),
+            .product(name: "CodeOwners", package: "swift-codeowners"),
+        ]),
+        .target(name: "CodeOwnersCore"),
+        .target(name: "Demo", dependencies: ["CodeOwnersCore"], plugins: ["CodeOwnersPlugin"]),
+        .testTarget(name: "DemoTests", dependencies: ["Demo"])
     ],
     swiftLanguageModes: [.v6, .v5]
 )
