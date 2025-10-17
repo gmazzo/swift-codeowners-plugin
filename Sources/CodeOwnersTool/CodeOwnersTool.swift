@@ -54,7 +54,8 @@ struct CodeOwnersTool: AsyncParsableCommand {
                     """
 
                     extension \(typeName) : HasCodeOwners {
-                        func codeOwners() -> Set<String> { return [\(owners ?? "")] }
+                        static let codeOwners: Set<String> = [\(owners ?? "")]
+                        var codeOwners: Set<String> { get { return \(typeName).codeOwners } }
                     }
 
                     """

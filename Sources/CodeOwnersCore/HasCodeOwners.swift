@@ -1,3 +1,3 @@
 public protocol HasCodeOwners {
-    func codeOwners() -> Set<String>
+    var codeOwners: Set<String> { get }
 }

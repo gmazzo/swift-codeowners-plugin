@@ -3,12 +3,9 @@ import XCTest
 
 class SomeClassTest: XCTestCase {
 
-    func testOwnersOfFoo() {
-        XCTAssertEqual(["demo-devs"], Foo().codeOwners())
-    }
-
-    func testOwnersOfBar() {
-        XCTAssertEqual(["demo-devs"], Bar().codeOwners())
+    func testOwnersOfSomeClass() {
+        XCTAssertEqual(["demo-devs"], SomeClassImpl.codeOwners)
+        XCTAssertEqual(["demo-devs"], SomeClassImpl().codeOwners)
     }
 
 }

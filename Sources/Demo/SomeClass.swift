@@ -1,16 +1,9 @@
-
-class Foo {
-
-    func doSomething() {
-        print("Doing something with Foo")
-    }
-
+protocol SomeClass {
+    func performAction()
 }
 
-struct Bar {
-
-    func doSomething() {
-        print("Doing something with Bar")
+class SomeClassImpl: SomeClass {
+    func performAction() {
+        print("Action performed by SomeClassImpl")
     }
-
 }

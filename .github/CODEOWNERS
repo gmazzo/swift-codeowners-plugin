@@ -1,1 +1,3 @@
-Sources/Demo/               @demo-devs
+Sources/Demo/   @demo-devs
+**/Foo/         @foo-devs
+**/Bar/         @bar-devs
