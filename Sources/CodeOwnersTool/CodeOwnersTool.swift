@@ -36,7 +36,8 @@ struct CodeOwnersTool: AsyncParsableCommand {
             fatalError("CODEOWNERS file not found at path: \(codeOwnersFile.path).")
         }
 
-        let codeOwners = CodeOwners.parse(file: codeOwnersFile.path)
+        let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
+        let codeOwners = CodeOwners.parse(file: codeOwnersContent)
 
         try fm.deleteRecursively(at: outputDirectory)
         try fm.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
