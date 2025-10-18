@@ -23,7 +23,9 @@ jobs:
         uses: actions/checkout@v5
       - name: Setup host
         uses: ./.github/actions/setup-host
-      - name: Test & Build
+      - name: Test & Build (plugin)
+        run: swift test --parallel --xunit-output .build/test-results.xml --enable-code-coverage
+      - name: Test & Build (demo)
         working-directory: Demo
         run: swift test --parallel --xunit-output .build/test-results.xml --enable-code-coverage
       - name: Publish Test Report
@@ -31,16 +33,16 @@ jobs:
         uses: gmazzo/publish-report-annotations@v1
         with:
           checkName: Test Results
-          reports: Demo/.build/test-results.xml
-      - name: Extract coverage data
-        working-directory: Demo
-        run: |
-          COVERAGE_FILE=$(swift test --show-codecov-path)
-          BUILD_DIR="${COVERAGE_FILE%/*/*}"
-          
-          llvm-cov export -format="lcov" \
-            "$BUILD_DIR/Demo ProjectPackageTests.xctest" \
-            -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info
+          reports: '**/.build/test-results.xml'
+      - name: Extract coverage data (plugin)
+        uses: ./.github/actions/extract-coverage
+        with:
+          test-target: "swift-codeowners-plugin"
+      - name: Extract coverage data (demo)
+        uses: ./.github/actions/extract-coverage
+        with:
+          test-target: "Demo Project"
+          working-directory: "Demo"
       - name: Coverage report
         uses: codecov/codecov-action@v5
         with:

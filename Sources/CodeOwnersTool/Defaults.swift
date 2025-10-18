@@ -5,7 +5,7 @@ let toolDefaults: (root: URL, codeOwnersFile: URL) = findCodeOwnersFile()
 private func findCodeOwnersFile() -> (root: URL, codeOwnersFile: URL) {
     let fm = FileManager.default
     let pwd = fm.pwd
-    let roots = [ fm.gitRoot, pwd ].compactMap { $0 }
+    let roots = [ pwd, fm.gitRoot ].compactMap { $0 }
     let candidates = [
         "CODEOWNERS",
         ".github/CODEOWNERS",
