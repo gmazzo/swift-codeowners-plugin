@@ -27,7 +27,7 @@ let package = Package(
                 .product(name: "CodeOwnersCore", package: "swift-codeowners-plugin")
             ],
             plugins: [
-                .product(name: "CodeOwnersPlugin", package: "swift-codeowners-plugin")
+                .plugin(name: "CodeOwnersPlugin", package: "swift-codeowners-plugin")
             ]
         )
     ]
