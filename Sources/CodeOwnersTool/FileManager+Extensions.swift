@@ -58,18 +58,4 @@ extension FileManager {
         }
     }
 
-    func findCodeOwnersFile(atRoot: URL) -> URL {
-        return [
-            "CODEOWNERS",
-            ".github/CODEOWNERS",
-            ".gitlab/CODEOWNERS",
-            "docs/CODEOWNERS",
-        ]
-        .map(atRoot.appendingPathComponent)
-        .filter {
-            fileExists(atPath: $0.path)
-        }
-        .first ?? atRoot.appendingPathComponent("CODEOWNERS")
-    }
-
 }
