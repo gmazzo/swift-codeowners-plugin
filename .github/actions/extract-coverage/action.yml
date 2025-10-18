@@ -1,0 +1,24 @@
+name: 'Setup Host'
+description: 'Configures the host runner to run the build'
+
+inputs:
+  test-target:
+    description: 'The target to test'
+    required: true
+  working-directory:
+    description: 'The working directory to run the tests in'
+    required: false
+    default: '.'
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        COVERAGE_FILE=$(swift test --show-codecov-path)
+        BUILD_DIR="${COVERAGE_FILE%/*/*}"
+
+        llvm-cov export -format="lcov" \
+          "$BUILD_DIR/${{ inputs.test-target }}PackageTests.xctest" \
+          -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info

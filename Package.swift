@@ -27,5 +27,6 @@ let package = Package(
             .product(name: "CodeOwners", package: "swift-codeowners"),
         ]),
         .target(name: "CodeOwnersCore"),
+        .testTarget(name: "CodeOwnersToolTests", dependencies: ["CodeOwnersTool"]),
     ]
 )
