@@ -22,7 +22,7 @@ extension FileManager {
                 return
             }
             for file in enumerator {
-                try onEach(file as! URL)
+                try walkFiles(at: file as! URL, onEach: onEach)
             }
         } else {
             try onEach(at)

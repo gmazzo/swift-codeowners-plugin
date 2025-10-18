@@ -37,29 +37,19 @@ struct CodeOwnersTool: AsyncParsableCommand {
         let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
         let codeOwners = CodeOwners.parse(file: codeOwnersContent)
 
-        var content =
-            """
-            import CodeOwnersCore
-
-            """
+        
+        var mappings: [String: Set<String>] = [:]
 
         try fm.walkFiles(at: sources) { source in
             let relativePath = source.relativePathTo(codeOwnersRoot)
-            let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral).joined(separator: ", ")
+            guard let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral) else { return }
 
             for typeName in try collectTypes(from: source) {
-                content +=
-                    """
-
-                    extension \(typeName) : HasCodeOwners {
-                        static let codeOwners: Set<String> = [\(owners ?? "")]
-                        var codeOwners: Set<String> { get { return \(typeName).codeOwners } }
-                    }
-
-                    """
+                mappings[typeName] = (mappings[typeName] ?? []).union(owners)
             }
         }
 
+        let content = generateContent(mappings)
         try fm.createDirectory(at: outputFile.deletingLastPathComponent(), withIntermediateDirectories: true)
         try content.write(to: outputFile, atomically: true, encoding: .utf8)
     }
@@ -68,20 +58,38 @@ struct CodeOwnersTool: AsyncParsableCommand {
         switch owner {
             case .user(let userId):
                 switch userId {
-                case .userName(let name): return "\"\(name)\""
-                case .email(let email): return "\"\(email)\""
+                case .userName(let name): return "\(name)"
+                case .email(let email): return "\(email)"
                 }
             case .team(let teamId):
-                return "\"\(teamId.organization)/\(teamId.name)\""
+                return "\(teamId.organization)/\(teamId.name)"
             }
     }
 
-    private func collectTypes(from source: URL) throws -> [String] {
+    private func collectTypes(from source: URL) throws -> Set<String> {
         let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
         let swiftFile = Parser.parse(source: swiftFileContent)
         let collector = TypesCollector(viewMode: .sourceAccurate)
         collector.walk(swiftFile)
         return collector.types
+    }
+    
+    private func generateContent(_ mappings: [String: Set<String>]) -> String {
+        var content = "import CodeOwnersCore\n"
+        for typeName in mappings.keys.sorted() {
+            let owners = mappings[typeName]!.sorted().map { "\"\($0)\"" }.joined(separator: ", ")
+            
+            content +=
+                """
+
+                extension \(typeName) : HasCodeOwners {
+                    static let codeOwners: Set<String> = [\(owners)]
+                    var codeOwners: Set<String> { get { return \(typeName).codeOwners } }
+                }
+
+                """
+        }
+        return content
     }
 
 }
