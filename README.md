@@ -43,3 +43,14 @@ struct MyType {
     }
 }
 ```
+
+# The CODEOWNERS file
+
+The expected format is the same
+as [GitHub's](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax)
+and it can be located at any of the following paths:
+
+- `$rootDir/CODEOWNERS`
+- `$rootDir/.github/CODEOWNERS`
+- `$rootDir/.gitlab/CODEOWNERS`
+- `$rootDir/docs/CODEOWNERS`
