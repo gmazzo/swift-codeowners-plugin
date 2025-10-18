@@ -1,3 +1,4 @@
 Sources/Demo/   @demo-devs
-**/Foo/         @foo-devs
-**/Bar/         @bar-devs
+Foo/            @foo-devs
+Bar/            @bar-devs
+**/*Enum.swift  @team/enum-experts
