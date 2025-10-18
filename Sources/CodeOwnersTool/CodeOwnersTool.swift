@@ -15,12 +15,10 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var sources: [URL]
 
     @Option(name: [.long, .customShort("r")], help: "The root directory where the CODEOWNERS file patterns are based from.")
-    var codeOwnersRoot: URL =
-        FileManager.default.gitRoot ?? FileManager.default.pwd
+    var codeOwnersRoot: URL = toolDefaults.root
 
     @Option(name: .shortAndLong, help: "The CODEOWNERS file to use for determining ownership.")
-    var codeOwnersFile: URL =
-        FileManager.default.findCodeOwnersFile(atRoot: FileManager.default.gitRoot ?? FileManager.default.pwd)
+    var codeOwnersFile: URL = toolDefaults.codeOwnersFile
 
     @Option(name: .shortAndLong, help: "The path to store the generated output CodeOwners attribution file")
     var outputFile: URL =
