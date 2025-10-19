@@ -18,4 +18,9 @@ class TypesCollector: SyntaxVisitor {
         return .skipChildren
     }
 
+    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        types.insert(node.extendedType.trimmedDescription)
+        return .skipChildren
+    }
+
 }
