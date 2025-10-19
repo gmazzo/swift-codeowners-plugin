@@ -1,0 +1,12 @@
+name: Release
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Swift Package Registry
+        run: curl --location 'https://swiftpackageregistry.com/add' --data-urlencode 'url=${{ github.server_url }}/${{ github.repository }}'
