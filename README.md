@@ -55,3 +55,5 @@ and it can be located at any of the following paths:
 - `$rootDir/.github/CODEOWNERS`
 - `$rootDir/.gitlab/CODEOWNERS`
 - `$rootDir/docs/CODEOWNERS`
+
+Where `rootDir` is either project's or GIT's root directory
