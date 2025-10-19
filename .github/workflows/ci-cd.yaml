@@ -16,33 +16,40 @@ permissions:
 
 jobs:
   ci-cd:
-    name: CI/CD
+    name: CI/CD (${{ matrix.name }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: Plugin
+            projectDir: ""
+            moduleTarget: "swift-codeowners-plugin"
+          - name: Demo
+            projectDir: "Demo"
+            moduleTarget: "Demo Project"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Setup host
         uses: ./.github/actions/setup-host
-      - name: Test & Build (plugin)
-        run: swift test --parallel --xunit-output .build/test-results.xml --enable-code-coverage
-      - name: Test & Build (demo)
-        working-directory: Demo
+      - name: Test & Build
+        working-directory: ${{ matrix.projectDir }}
         run: swift test --parallel --xunit-output .build/test-results.xml --enable-code-coverage
       - name: Publish Test Report
         if: ${{ !cancelled() }}
         uses: gmazzo/publish-report-annotations@v1
         with:
-          checkName: Test Results
+          checkName: Test Results (${{ matrix.name }})
           reports: '**/.build/test-results.xml'
-      - name: Extract coverage data (plugin)
-        uses: ./.github/actions/extract-coverage
-        with:
-          test-target: "swift-codeowners-plugin"
-      - name: Extract coverage data (demo)
-        uses: ./.github/actions/extract-coverage
-        with:
-          test-target: "Demo Project"
-          working-directory: "Demo"
+      - name: Extract coverage data
+        working-directory: ${{ matrix.projectDir }}
+        run: |
+          COVERAGE_FILE=$(swift test --show-codecov-path)
+          BUILD_DIR="${COVERAGE_FILE%/*/*}"
+          
+          llvm-cov export -format="lcov" \
+            "$BUILD_DIR/${{ matrix.moduleTarget }}PackageTests.xctest" \
+            -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info
       - name: Coverage report
         uses: codecov/codecov-action@v5
         with:
