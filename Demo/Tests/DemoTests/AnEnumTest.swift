@@ -1,13 +1,10 @@
-import XCTest
+import Testing
 @testable import Demo
 
-class AnEnumTest: XCTestCase {
-
-    func testOwnersOfAnEnum() {
-        XCTAssertEqual(["team/enum-experts"], AnEnum.codeOwners)
-        XCTAssertEqual(["team/enum-experts"], AnEnum.AAA.codeOwners)
-        XCTAssertEqual(["team/enum-experts"], AnEnum.BBB.codeOwners)
-        XCTAssertEqual(["team/enum-experts"], AnEnum.CCC.codeOwners)
-    }
-
+@Test
+func ownersOfAnEnum() {
+    #expect(["team/enum-experts"] == AnEnum.codeOwners)
+    #expect(["team/enum-experts"] == AnEnum.AAA.codeOwners)
+    #expect(["team/enum-experts"] == AnEnum.BBB.codeOwners)
+    #expect(["team/enum-experts"] == AnEnum.CCC.codeOwners)
 }

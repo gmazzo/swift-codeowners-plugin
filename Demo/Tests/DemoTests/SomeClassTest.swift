@@ -1,11 +1,8 @@
-import XCTest
+import Testing
 @testable import Demo
 
-class SomeClassTest: XCTestCase {
-
-    func testOwnersOfSomeClass() {
-        XCTAssertEqual(["demo-devs"], SomeClassImpl.codeOwners)
-        XCTAssertEqual(["demo-devs"], SomeClassImpl().codeOwners)
-    }
-
+@Test
+func ownersOfSomeClass() {
+    #expect(["demo-devs"] == SomeClassImpl.codeOwners)
+    #expect(["demo-devs"] == SomeClassImpl().codeOwners)
 }

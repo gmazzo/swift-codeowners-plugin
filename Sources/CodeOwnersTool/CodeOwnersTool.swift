@@ -3,6 +3,8 @@ import ArgumentParser
 import CodeOwners
 import SwiftParser
 
+let toolDefaults: (root: URL, codeOwnersFile: URL) = findCodeOwnersFile()
+
 @main
 struct CodeOwnersTool: AsyncParsableCommand {
 
@@ -41,7 +43,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
         var mappings: [String: Set<String>] = [:]
 
         try fm.walkFiles(at: sources) { source in
-            let relativePath = source.relativePathTo(codeOwnersRoot)
+            guard let relativePath = source.relativePathTo(codeOwnersRoot) else { return }
             guard let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral) else { return }
 
             for typeName in try collectTypes(from: source) {
@@ -92,4 +94,21 @@ struct CodeOwnersTool: AsyncParsableCommand {
         return content
     }
 
+}
+
+private func findCodeOwnersFile() -> (root: URL, codeOwnersFile: URL) {
+    let fm = FileManager.default
+    let pwd = fm.pwd
+    let roots = [ pwd, fm.gitRoot ].compactMap { $0 }
+    let candidates = [
+        "CODEOWNERS",
+        ".github/CODEOWNERS",
+        ".gitlab/CODEOWNERS",
+        "docs/CODEOWNERS",
+    ]
+
+    return roots
+    .flatMap { root in candidates.map { path in (root: root, codeOwnersFile: root.appendingPathComponent(path)) } }
+    .filter { fm.fileExists(atPath: $0.codeOwnersFile.path) }
+    .first ?? (root: pwd, codeOwnersFile: pwd.appendingPathComponent("CODEOWNERS"))
 }
