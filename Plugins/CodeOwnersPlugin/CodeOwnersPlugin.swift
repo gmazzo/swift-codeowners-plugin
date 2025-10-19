@@ -12,6 +12,7 @@ struct CodeOwnersPlugin: BuildToolPlugin {
 
         let inputFiles = swiftTarget.sourceFiles(withSuffix: ".swift").map(\.url)
         if (inputFiles.isEmpty) {
+            Diagnostics.warning("Target \(target.name) does not contain any Swift source files.")
             return []
         }
 
