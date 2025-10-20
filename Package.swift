@@ -28,5 +28,6 @@ let package = Package(
         ]),
         .target(name: "CodeOwnersCore"),
         .testTarget(name: "CodeOwnersToolTests", dependencies: ["CodeOwnersTool"]),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )
