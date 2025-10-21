@@ -26,6 +26,9 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var outputFile: URL =
         FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
+    @Option(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
+    var verbose: Bool = false
+
     func run() throws {
         let fm = FileManager.default
 
@@ -43,11 +46,17 @@ struct CodeOwnersTool: AsyncParsableCommand {
         var mappings: [String: Set<String>] = [:]
 
         try fm.walkFiles(at: sources) { source in
+            if verbose { print("Processing source file: \(source.path)\n") }
+
             guard let relativePath = source.relativePathTo(codeOwnersRoot) else { return }
             guard let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral) else { return }
 
-            for typeName in try collectTypes(from: source) {
-                mappings[typeName] = (mappings[typeName] ?? []).union(owners)
+            do {
+                for typeName in try collectTypes(from: source) {
+                    mappings[typeName] = (mappings[typeName] ?? []).union(owners)
+                }
+            } catch {
+                print("warning: Failed to process source file '\(relativePath)': \(error)\n", to: &stdErr)
             }
         }
 
