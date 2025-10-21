@@ -26,6 +26,18 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var outputFile: URL =
         FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
+    @Option(name: .shortAndLong, help: "Specify the module to import for the generated CodeOwners class.")
+    var `import`: String = "CodeOwnersCore"
+
+    @Flag(name: .customLong("no-import"), help: "Disable importing a module for the generated CodeOwners class.")
+    var noImport: Bool = false
+
+    @Option(name: .shortAndLong, help: "Specify the protocol name for conformance for the generated CodeOwners class.")
+    var `protocol`: String = "HasCodeOwners"
+
+    @Flag(name: .customLong("no-protocol"), help: "Disable protocol conformance for for the generated CodeOwners class.")
+    var noProtocol: Bool = false
+
     @Flag(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
     var verbose: Bool = false
 
@@ -55,7 +67,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
 
         try fm.walkFiles(at: sources) { source in
             if source.pathExtension != "swift" { return }
-            if verbose { print("Processing source file: \(source.path)\n") }
+            if verbose { print("Processing source file: \(source.path)") }
 
             guard let relativePath = source.relativePathTo(codeOwnersRoot) else { return }
             guard let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral) else { return }
@@ -65,7 +77,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
                     mappings[typeName] = (mappings[typeName] ?? []).union(owners)
                 }
             } catch {
-                print("warning: Failed to process source file '\(relativePath)': \(error)\n", to: &stdErr)
+                print("warning: Failed to process source file '\(relativePath)': \(error)", to: &stdErr)
             }
         }
 
@@ -99,14 +111,14 @@ struct CodeOwnersTool: AsyncParsableCommand {
     }
     
     private func generateContent(_ mappings: [String: Set<String>]) -> String {
-        var content = "import CodeOwnersCore\n"
+        var content = noImport || noProtocol ? "" : "import \(`import`)\n"
         for typeName in mappings.keys.sorted() {
             let owners = mappings[typeName]!.sorted().map { "\"\($0)\"" }.joined(separator: ", ")
             
             content +=
                 """
 
-                extension \(typeName) : HasCodeOwners {
+                extension \(typeName)\(noImport ? "" : " : \(`protocol`)") {
                     static let codeOwners: Set<String> = [\(owners)]
                     var codeOwners: Set<String> { get { return \(typeName).codeOwners } }
                 }
