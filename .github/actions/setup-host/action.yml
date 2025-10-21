@@ -5,7 +5,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Swift
-      uses: swift-actions/setup-swift@v2
+      uses: SwiftyLab/setup-swift@latest
     - name: Swift Package Manager Cache
       uses: actions/cache@v4
       with:
