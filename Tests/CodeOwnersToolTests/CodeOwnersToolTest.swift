@@ -14,11 +14,11 @@ private let tempDirectory =
         let expectedOutput = tempDirectory.appendingPathComponent("GeneratedSources/_CodeOwners.swift")
 
         let tool = try CodeOwnersTool.parse([
-                                                tempDirectory.appendingPathComponent("Sources").path,
-                                                "-r", tempDirectory.path,
-                                                "-c", tempDirectory.appendingPathComponent("CODEOWNERS").path,
-                                                "-o", expectedOutput.path
-                                            ])
+            tempDirectory.appendingPathComponent("Sources").path, "-v",
+            "-r", tempDirectory.path,
+            "-c", tempDirectory.appendingPathComponent("CODEOWNERS").path,
+            "-o", expectedOutput.path
+        ])
 
         try tool.run()
 
