@@ -5,3 +5,5 @@ class Foo {
     }
 
 }
+
+private class PrivateFoo {}

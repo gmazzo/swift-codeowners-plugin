@@ -5,3 +5,5 @@ struct Bar {
     }
 
 }
+
+private struct PrivateBar {}
