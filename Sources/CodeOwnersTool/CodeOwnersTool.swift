@@ -118,7 +118,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             content +=
                 """
 
-                extension \(typeName)\(noImport ? "" : " : \(`protocol`)") {
+                extension \(typeName)\(noProtocol ? "" : " : \(`protocol`)") {
                     static let codeOwners: Set<String> = [\(owners)]
                     var codeOwners: Set<String> { get { return \(typeName).codeOwners } }
                 }
