@@ -26,7 +26,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var outputFile: URL =
         FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
-    @Option(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
+    @Flag(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
     var verbose: Bool = false
 
     func run() throws {
