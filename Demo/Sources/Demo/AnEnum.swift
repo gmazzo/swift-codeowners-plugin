@@ -3,3 +3,5 @@ enum AnEnum {
     case BBB
     case CCC
 }
+
+private enum PrivateEnum {}
