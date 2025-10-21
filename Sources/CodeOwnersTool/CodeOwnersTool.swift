@@ -29,20 +29,28 @@ struct CodeOwnersTool: AsyncParsableCommand {
     @Flag(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
     var verbose: Bool = false
 
+    @Flag(name: .shortAndLong, help: "Suppress non-error output.")
+    var quiet: Bool = false
+
     func run() throws {
         let fm = FileManager.default
 
+        if (quiet && verbose) {
+            print("Cannot use --quiet and --verbose flags together.", to: &stdErr)
+            return
+        }
         if (sources.isEmpty) {
-            fatalError("No source files provided.")
+            print("No source files provided.", to: &stdErr)
+            return
         }
         if (!fm.fileExists(atPath: codeOwnersFile.path)) {
-            fatalError("CODEOWNERS file not found at path: \(codeOwnersFile.path).")
+            print("CODEOWNERS file not found at path: \(codeOwnersFile.path).", to: &stdErr)
+            return
         }
 
         let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
         let codeOwners = CodeOwners.parse(file: codeOwnersContent)
 
-        
         var mappings: [String: Set<String>] = [:]
 
         try fm.walkFiles(at: sources) { source in
@@ -64,6 +72,10 @@ struct CodeOwnersTool: AsyncParsableCommand {
         let content = generateContent(mappings)
         try fm.createDirectory(at: outputFile.deletingLastPathComponent(), withIntermediateDirectories: true)
         try content.write(to: outputFile, atomically: true, encoding: .utf8)
+
+        if (!quiet) {
+            print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile.path)")
+        }
     }
     
     private func asLiteral(owner: Owner) -> String {
