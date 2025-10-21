@@ -46,6 +46,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
         var mappings: [String: Set<String>] = [:]
 
         try fm.walkFiles(at: sources) { source in
+            if source.pathExtension != "swift" { return }
             if verbose { print("Processing source file: \(source.path)\n") }
 
             guard let relativePath = source.relativePathTo(codeOwnersRoot) else { return }
