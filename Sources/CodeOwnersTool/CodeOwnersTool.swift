@@ -51,7 +51,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
         let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
         let codeOwners = CodeOwners.parse(file: codeOwnersContent)
 
-        var mappings: [String: Set<String>] = [:]
+        var mappings: [Substring: Set<String>] = [:]
 
         try fm.walkFiles(at: sources) { source in
             if source.pathExtension != "swift" { return }
@@ -90,28 +90,32 @@ struct CodeOwnersTool: AsyncParsableCommand {
             }
     }
 
-    private func collectTypes(from source: URL) throws -> Set<String> {
+    private func collectTypes(from source: URL) throws -> Set<Substring> {
         let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
         let swiftFile = Parser.parse(source: swiftFileContent)
         let collector = TypesCollector(viewMode: .sourceAccurate)
         collector.walk(swiftFile)
-        return collector.types
+        return collector.rootTypes
     }
     
-    private func generateContent(_ mappings: [String: Set<String>]) -> String {
-        var content = "import CodeOwnersCore\n"
+    private func generateContent(_ mappings: [Substring: Set<String>]) -> String {
+        var content = """
+            import CodeOwnersCore
+
+            internal class _CodeOwners : CodeOwnersMappingProvider {
+                static let codeOwners: [Substring: Set<String>]? = [
+            
+            """
         for typeName in mappings.keys.sorted() {
             let owners = mappings[typeName]!.sorted().map { "\"\($0)\"" }.joined(separator: ", ")
             
-            content +=
-                """
-                
-                internal class \(typeName)_CodeOwners : CodeOwnersProvider {
-                    static let codeOwners: Set<String> = [\(owners)]
-                }
-
-                """
+            content += "        \"\(typeName)\": [\(owners)],\n"
         }
+        content += """
+            ]
+        }
+        
+        """
         return content
     }
 
