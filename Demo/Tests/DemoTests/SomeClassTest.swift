@@ -1,5 +1,5 @@
 import Testing
-import CodeOwnersCore
+import CodeOwnersAPI
 @testable import Demo
 
 @Test

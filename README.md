@@ -25,7 +25,7 @@ let package = Package(
         .target(
             name: "MyProjectTarget", 
             dependencies: [
-                .product(name: "CodeOwnersCore", package: "swift-codeowners-plugin")
+                .product(name: "CodeOwnersAPI", package: "swift-codeowners-plugin")
             ],
             plugins: [
                 .plugin(name: "CodeOwnersPlugin", package: "swift-codeowners-plugin")

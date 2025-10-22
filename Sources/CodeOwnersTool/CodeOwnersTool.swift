@@ -100,7 +100,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
     
     private func generateContent(_ mappings: [Substring: Set<String>]) -> String {
         var content = """
-            import CodeOwnersCore
+            import CodeOwnersAPI
 
             internal class _CodeOwners : CodeOwnersMappingProvider {
                 static let codeOwners: [Substring: Set<String>]? = [
