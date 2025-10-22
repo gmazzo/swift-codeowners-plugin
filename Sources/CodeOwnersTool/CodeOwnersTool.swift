@@ -26,18 +26,6 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var outputFile: URL =
         FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
-    @Option(name: .shortAndLong, help: "Specify the module to import for the generated CodeOwners class.")
-    var `import`: String = "CodeOwnersCore"
-
-    @Flag(name: .customLong("no-import"), help: "Disable importing a module for the generated CodeOwners class.")
-    var noImport: Bool = false
-
-    @Option(name: .shortAndLong, help: "Specify the protocol name for conformance for the generated CodeOwners class.")
-    var `protocol`: String = "HasCodeOwners"
-
-    @Flag(name: .customLong("no-protocol"), help: "Disable protocol conformance for for the generated CodeOwners class.")
-    var noProtocol: Bool = false
-
     @Flag(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
     var verbose: Bool = false
 
@@ -111,16 +99,15 @@ struct CodeOwnersTool: AsyncParsableCommand {
     }
     
     private func generateContent(_ mappings: [String: Set<String>]) -> String {
-        var content = noImport || noProtocol ? "" : "import \(`import`)\n"
+        var content = "import CodeOwnersCore\n"
         for typeName in mappings.keys.sorted() {
             let owners = mappings[typeName]!.sorted().map { "\"\($0)\"" }.joined(separator: ", ")
             
             content +=
                 """
-
-                extension \(typeName)\(noProtocol ? "" : " : \(`protocol`)") {
+                
+                internal class \(typeName)_CodeOwners : CodeOwnersProvider {
                     static let codeOwners: Set<String> = [\(owners)]
-                    var codeOwners: Set<String> { get { return \(typeName).codeOwners } }
                 }
 
                 """

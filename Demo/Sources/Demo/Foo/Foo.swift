@@ -6,4 +6,12 @@ class Foo {
 
 }
 
+class FooWithMyProtocol : MyProtocol {
+
+    func myAction() {
+        print("Action performed by FooWithMyProtocol")
+    }
+
+}
+
 private class PrivateFoo {}

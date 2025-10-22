@@ -1,10 +1,11 @@
 import Testing
+import CodeOwnersCore
 @testable import Demo
 
 @Test
 func ownersOfAnEnum() {
-    #expect(["team/enum-experts"] == AnEnum.codeOwners)
-    #expect(["team/enum-experts"] == AnEnum.AAA.codeOwners)
-    #expect(["team/enum-experts"] == AnEnum.BBB.codeOwners)
-    #expect(["team/enum-experts"] == AnEnum.CCC.codeOwners)
+    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.self))
+    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.AAA))
+    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.BBB))
+    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.CCC))
 }
