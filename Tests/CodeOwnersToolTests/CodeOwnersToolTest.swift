@@ -25,7 +25,7 @@ private let Default = "<#default#>"
         let content = try String(contentsOf: expectedOutput, encoding: .utf8)
         #expect(content ==
            """
-           import CodeOwnersCore
+           import CodeOwnersAPI
 
            internal class _CodeOwners : CodeOwnersMappingProvider {
                static let codeOwners: [Substring: Set<String>]? = [

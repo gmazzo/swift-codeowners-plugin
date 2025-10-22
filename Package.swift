@@ -11,7 +11,7 @@ let package = Package(
     products: [
         .plugin(name: "CodeOwnersPlugin", targets: ["CodeOwnersPlugin"]),
         .executable(name: "CodeOwnersTool", targets: ["CodeOwnersTool"]),
-        .library(name: "CodeOwnersCore", targets: ["CodeOwnersCore"]),
+        .library(name: "CodeOwnersAPI", targets: ["CodeOwnersAPI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "602.0.0"),
@@ -26,7 +26,7 @@ let package = Package(
             .product(name: "SwiftParser", package: "swift-syntax"),
             .product(name: "CodeOwners", package: "swift-codeowners"),
         ]),
-        .target(name: "CodeOwnersCore"),
+        .target(name: "CodeOwnersAPI"),
         .testTarget(name: "CodeOwnersToolTests", dependencies: ["CodeOwnersTool"]),
     ]
 )
