@@ -19,7 +19,7 @@ In your `Package.swift` add the plugin dependency:
 let package = Package(
     name: "MyProject",
     dependencies: [
-        .package(url: "https://github.com/gmazzo/swift-codeowners-plugin", from: "0.1.0"),
+        .package(url: "https://github.com/gmazzo/swift-codeowners-plugin", from: "x.y.z"),
     ],
     targets: [
         .target(
@@ -35,12 +35,14 @@ let package = Package(
 )
 ```
 
-Then any `struct`, `class` or `enum` will be decorated with the `HasCodeOwners` protocol, allowing to query its owner at runtime:
+Then you can use the `codeOwnersOf` function on any `struct`, `class` or `enum` to query their owners at runtime:
 
 ```swift
 struct MyType {
     func printOwner() {
-        print("This type is owned by \(self.codeOwners)")
+        print("This type is owned by \(codeOwnersOf(self))") // or
+        print("This type is owned by \(codeOwnersOf(MyType.self))") // or
+        print("This type is owned by \(codeOwnersOf(MyType()))") // or
     }
 }
 ```
