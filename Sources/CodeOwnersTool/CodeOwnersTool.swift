@@ -99,6 +99,8 @@ struct CodeOwnersTool: AsyncParsableCommand {
     }
     
     private func generateContent(_ mappings: [Substring: Set<String>]) -> String {
+        if mappings.isEmpty { return "" }
+
         var content = """
             import CodeOwnersAPI
 
