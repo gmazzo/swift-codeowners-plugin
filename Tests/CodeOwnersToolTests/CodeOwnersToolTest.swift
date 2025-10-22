@@ -27,12 +27,11 @@ private let Default = "<#default#>"
            """
            import CodeOwnersCore
 
-           internal class Bar_CodeOwners : CodeOwnersProvider {
-               static let codeOwners: Set<String> = ["bar-devs"]
-           }
-
-           internal class Foo_CodeOwners : CodeOwnersProvider {
-               static let codeOwners: Set<String> = ["foo-devs"]
+           internal class _CodeOwners : CodeOwnersMappingProvider {
+               static let codeOwners: [Substring: Set<String>]? = [
+                   "Bar": ["bar-devs"],
+                   "Foo": ["foo-devs"],
+               ]
            }
 
            """)

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 class TypesCollector: SyntaxVisitor {
-    var types: Set<String> = []
+    var rootTypes: Set<Substring> = []
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         return visit(node.name.text, node.modifiers)
@@ -21,7 +21,9 @@ class TypesCollector: SyntaxVisitor {
     
     private func visit(_ name: String, _ modifiers: DeclModifierListSyntax) -> SyntaxVisitorContinueKind {
         if !modifiers.contains(where: { $0.name.text == "private" }) {
-            types.insert(name)
+            let parts = name.split(separator: ".", maxSplits: 2) // we only care about the top level type
+            
+            rootTypes.insert(parts[0])
         }
         return .skipChildren
     }

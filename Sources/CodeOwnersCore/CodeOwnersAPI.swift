@@ -1,34 +1,29 @@
 import Foundation
 
-nonisolated(unsafe) private var ownersCache: [String: Cached] = [:]
+nonisolated(unsafe) private var ownersCache: [Substring: CodeOwnersMappingProvider.Type] = [:]
 private let writeLock = NSLock()
 
-private struct Cached {
-    let owners: Set<String>?
+public protocol CodeOwnersMappingProvider  {
+    static var codeOwners: [Substring: Set<String>]? { get }
 }
 
-public protocol CodeOwnersProvider {
-    static var codeOwners: Set<String> { get }
+private class Missing : CodeOwnersMappingProvider {
+    static let codeOwners: [Substring: Set<String>]? = nil
 }
 
 public func codeOwnersOf(_ obj: Any) -> Set<String>? {
-    let typeName = "\(String(reflecting: type(of: obj)))".deletingSuffix(".Type")
-    if let cached = ownersCache[typeName] {
-        return cached.owners
-    }
+    let parts = "\(String(reflecting: type(of: obj)))".split(separator: ".", maxSplits: 3)
+    if parts.count < 2 { return nil }
     
-    let owners = (NSClassFromString("\(typeName)_CodeOwners") as? CodeOwnersProvider.Type)?.codeOwners
-    writeLock.withLock {
-        ownersCache[typeName] = Cached(owners: owners)
-    }
-    return owners
+    let (moduleName, typeName) = (parts[0], parts[1])
+    let provider = resolve(moduleName)
+    return provider?[typeName]
 }
 
-private extension String {
+private func resolve(_ moduleName: Substring) -> [Substring: Set<String>]? {
+    if let cached = ownersCache[moduleName] { return cached.codeOwners }
     
-    func deletingSuffix(_ suffix: String) -> String {
-        guard self.hasSuffix(suffix) else { return self }
-        return String(self.dropLast(suffix.count))
-    }
-    
+    let provider = (NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type) ?? Missing.self
+    writeLock.withLock { ownersCache[moduleName] = provider }
+    return provider.codeOwners
 }
