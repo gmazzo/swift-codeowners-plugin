@@ -1,15 +1,22 @@
 name: 'Setup Host'
 description: 'Configures the host runner to run the build'
 
+inputs:
+  swift-version:
+    description: 'The Swift version to install'
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Setup Swift
       uses: SwiftyLab/setup-swift@v1
+      with:
+        swift-version: ${{ inputs.swift-version }}
     - name: Swift Package Manager Cache
       uses: actions/cache@v4
       with:
         path: '**/.build/'
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-${{ inputs.swift-version }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
-          ${{ runner.os }}-spm-
+          ${{ runner.os }}-${{ inputs.swift-version }}-spm-
