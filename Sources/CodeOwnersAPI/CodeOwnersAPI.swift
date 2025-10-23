@@ -11,8 +11,14 @@ private class Missing : CodeOwnersMappingProvider {
     static let codeOwners: [Substring: Set<String>]? = nil
 }
 
-public func codeOwnersOf(_ obj: Any) -> Set<String>? {
-    let parts = "\(String(reflecting: type(of: obj)))".split(separator: ".", maxSplits: 3)
+public func codeOwnersOf(_ of: Any?) -> Set<String>? {
+    if of == nil { return nil }
+    let type = type(of: of!)
+    return codeOwnersOf(nsClassName: "\(String(reflecting: type))")
+}
+
+public func codeOwnersOf(nsClassName: String) -> Set<String>? {
+    let parts = nsClassName.split(separator: ".", maxSplits: 3)
     if parts.count < 2 { return nil }
     
     let (moduleName, typeName) = (parts[0], parts[1])
