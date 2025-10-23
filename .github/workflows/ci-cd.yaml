@@ -14,12 +14,14 @@ permissions:
 
 jobs:
   ci-cd:
-    name: CI/CD (${{ matrix.name }}, Swift ${{ matrix.swift-version }})
-    runs-on: ubuntu-latest
+    name: CI/CD (${{ matrix.name }}, Swift ${{ matrix.swift-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}-latest
     strategy:
+      fail-fast: false
       matrix:
         name: [ 'Plugin', 'Demo' ]
         swift-version: [ '6.0', 'latest' ]
+        os: [ 'ubuntu', 'macos' ]
         include:
           - name: Plugin
             projectDir: ""
@@ -44,6 +46,7 @@ jobs:
           checkName: Test Results (${{ matrix.name }})
           reports: '**/.build/test-results*.xml'
       - name: Extract coverage data
+        if: ${{ runner.os == 'linux' }}
         working-directory: ${{ matrix.projectDir }}
         run: |
           COVERAGE_FILE=$(swift test --show-codecov-path)
@@ -53,6 +56,7 @@ jobs:
             "$BUILD_DIR/${{ matrix.moduleTarget }}PackageTests.xctest" \
             -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info
       - name: Coverage report
+        if: ${{ runner.os == 'linux' }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

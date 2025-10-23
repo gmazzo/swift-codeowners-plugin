@@ -93,7 +93,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
     private func collectTypes(from source: URL) throws -> Set<Substring> {
         let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
         let swiftFile = Parser.parse(source: swiftFileContent)
-        let collector = TypesCollector(viewMode: .sourceAccurate)
+        let collector = TypesCollector(viewMode: .fixedUp)
         collector.walk(swiftFile)
         return collector.rootTypes
     }

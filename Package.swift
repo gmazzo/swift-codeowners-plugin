@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-codeowners-plugin",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v13),
         .iOS(.v13),
     ],
     products: [
@@ -27,6 +27,7 @@ let package = Package(
             .product(name: "CodeOwners", package: "swift-codeowners"),
         ]),
         .target(name: "CodeOwnersAPI"),
+        .testTarget(name: "CodeOwnersAPITests", dependencies: ["CodeOwnersAPI"]),
         .testTarget(name: "CodeOwnersToolTests", dependencies: ["CodeOwnersTool"]),
     ]
 )

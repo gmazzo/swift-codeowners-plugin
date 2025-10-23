@@ -31,6 +31,7 @@ private let Default = "<#default#>"
                static let codeOwners: [Substring: Set<String>]? = [
                    "Bar": ["bar-devs"],
                    "Foo": ["foo-devs"],
+                   "topLevelFunc": ["toplevel-dev"],
                ]
            }
 
@@ -43,9 +44,11 @@ private let Default = "<#default#>"
         try FileManager.default.createDirectory(at: sources, withIntermediateDirectories: true)
         try "struct Foo {}".write(to: sources.appendingPathComponent("Foo.swift"), atomically: true, encoding: .utf8)
         try "class Bar {}".write(to: sources.appendingPathComponent("Bar.swift"), atomically: true, encoding: .utf8)
+        try "func topLevelFunc {}".write(to: sources.appendingPathComponent("TopLevelFunc.swift"), atomically: true, encoding: .utf8)
         try """
-            Foo*   @foo-devs
-            Bar*   @bar-devs
+            Foo*                @foo-devs
+            Bar*                @bar-devs
+            TopLevelFunc.swift  @toplevel-dev
             """.write(to: tempDirectory.appendingPathComponent("CODEOWNERS"), atomically: true, encoding: .utf8)
     }
 

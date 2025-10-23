@@ -1,7 +1,13 @@
+import Foundation
+
 struct Bar {
 
     func doSomething() {
         print("Doing something with Bar")
+    }
+
+    func callStack() -> [String] {
+        return Thread.callStackSymbols
     }
 
 }

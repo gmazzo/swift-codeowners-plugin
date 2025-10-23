@@ -26,6 +26,17 @@ public func codeOwnersOf(nsClassName: String) -> Set<String>? {
     return provider?[typeName]
 }
 
+#if os(Linux)
+@available(*, deprecated, message: "Call stacks are not fully supported on Linux")
+#endif
+public func codeOwnersOfCallStack(symbols: [String] = Thread.callStackSymbols, demangle: Bool = true) -> Set<String>? {
+    for symbol in symbols {
+        guard let className = classNameFromSymbol(symbol, demangle) else { continue }
+        if let owners = codeOwnersOf(nsClassName: "\(className)") { return owners }
+    }
+    return nil
+}
+
 private func resolve(_ moduleName: Substring) -> [Substring: Set<String>]? {
     if let cached = ownersCache[moduleName] { return cached.codeOwners }
     
