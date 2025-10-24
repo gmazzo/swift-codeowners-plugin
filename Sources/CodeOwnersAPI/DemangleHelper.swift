@@ -24,9 +24,9 @@ internal func swiftDemangle(_ mangledName: String) -> String? {
 internal func classNameFromSymbol(_ symbol: String, _ demangle: Bool) -> Substring? {
     var method = symbol
     while(true) {
+        if (demangle) { method = swiftDemangle(method) ?? method }
         guard let match = method.firstMatch(of: symbolRegEx), match.count != method.count else { break }
         method = "\(match.0)"
-        if (demangle) { method = swiftDemangle(method) ?? method }
     }
     let className = method.firstMatch(of: classNameRegEx)?.1
     return className
