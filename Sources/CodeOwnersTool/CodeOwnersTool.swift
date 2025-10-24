@@ -26,6 +26,9 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var outputFile: URL =
         FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
+    @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
+    var renames: [RenameRule] = []
+
     @Flag(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
     var verbose: Bool = false
 
@@ -48,8 +51,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             return
         }
 
-        let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
-        let codeOwners = CodeOwners.parse(file: codeOwnersContent)
+        let codeOwners = try parseCodeOwners(codeOwnersFile)
 
         var mappings: [Substring: Set<String>] = [:]
 
@@ -78,7 +80,32 @@ struct CodeOwnersTool: AsyncParsableCommand {
         }
     }
     
-    private func asLiteral(owner: Owner) -> String {
+    private func parseCodeOwners(_ codeOwnersFile: URL) throws -> CodeOwners {
+        let content = try String(contentsOf: codeOwnersFile, encoding: .utf8)
+        let parsed = CodeOwners.parse(file: content)
+        if renames.isEmpty { return parsed }
+        
+        let renamedLines = parsed.lines.map { line in
+            switch line {
+            case .codeOwner(let codeOwner):
+                let renamedOwners = codeOwner.owners.map { owner in
+                    var literal = asLiteral(owner)
+                    for rename in renames {
+                        literal = literal.replacing(rename.regex, with: rename.replacement)
+                    }
+                    return Owner.user(UserIdentifier.userName(literal)) // we really don't care on the kind of owner
+                }
+                
+                return CodeOwnerLine.codeOwner(CodeOwner(pattern: codeOwner.pattern, owners: renamedOwners))
+                
+            default:
+                return line
+            }
+        }
+        return CodeOwners(lines: renamedLines)
+    }
+    
+    private func asLiteral(_ owner: Owner) -> String {
         switch owner {
             case .user(let userId):
                 switch userId {
