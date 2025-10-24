@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "Demo Project",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v13),
         .iOS(.v13),
     ],
     dependencies: [

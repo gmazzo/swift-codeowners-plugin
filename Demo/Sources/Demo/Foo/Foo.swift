@@ -1,7 +1,13 @@
+import Foundation
+
 class Foo {
 
     func doSomething() {
         print("Doing something with Foo")
+    }
+
+    func callStack() -> [String] {
+        return Thread.callStackSymbols
     }
 
 }

@@ -30,6 +30,7 @@ extension URL {
         // Build relative path:
         var relComponents = Array(repeating: "..", count: baseComponents.count - i)
         relComponents.append(contentsOf: destComponents[i...])
+        
         return relComponents.joined(separator: "/")
     }
 

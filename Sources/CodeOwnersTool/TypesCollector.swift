@@ -5,7 +5,7 @@ class TypesCollector: SyntaxVisitor {
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         return visit(node.name.text, node.modifiers)
-   }
+    }
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         return visit(node.name.text, node.modifiers)
@@ -15,8 +15,16 @@ class TypesCollector: SyntaxVisitor {
         return visit(node.name.text, node.modifiers)
     }
 
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        return node.parent?.kind == .codeBlockItem ? visit(node.name.text, node.modifiers) : .skipChildren
+    }
+
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         return visit(node.extendedType.trimmedDescription, node.modifiers)
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        return .skipChildren // protocols by itself can't be instantiated
     }
     
     private func visit(_ name: String, _ modifiers: DeclModifierListSyntax) -> SyntaxVisitorContinueKind {
