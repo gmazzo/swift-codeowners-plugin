@@ -9,6 +9,8 @@ extension URL: ExpressibleByArgument {}
 
 extension URL {
 
-    public init?(argument: String) { self.init(fileURLWithPath: argument) }
+    public init?(argument: String) {
+        self.init(fileURLWithPath: argument)
+    }
 
 }

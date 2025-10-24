@@ -4,8 +4,8 @@ import CodeOwnersAPI
 
 @Test
 func ownersOfAnEnum() {
-    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.self))
-    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.AAA))
-    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.BBB))
-    #expect(["team/enum-experts"] == codeOwnersOf(AnEnum.CCC))
+    #expect(["team/enum-devs"] == codeOwnersOf(AnEnum.self))
+    #expect(["team/enum-devs"] == codeOwnersOf(AnEnum.AAA))
+    #expect(["team/enum-devs"] == codeOwnersOf(AnEnum.BBB))
+    #expect(["team/enum-devs"] == codeOwnersOf(AnEnum.CCC))
 }

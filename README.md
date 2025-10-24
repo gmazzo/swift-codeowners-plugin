@@ -59,3 +59,20 @@ and it can be located at any of the following paths:
 - `$rootDir/docs/CODEOWNERS`
 
 Where `rootDir` is either project's or GIT's root directory
+
+# The `[.codeowners-tool.json](Demo/.codeowners-tool.json)` configuration file
+You can customize the plugin behavior by adding a `.codeowners-tool.json` file:
+
+```json
+{
+  "codeOwners": {
+    "root": ".",                  // The root directory where the CODEOWNERS file patterns are based from.
+    "file": ".github/CODEOWNERS"  // The CODEOWNERS file to use for determining ownership.
+  },
+  "renames": {
+    "regEx": "replacement"        // Regex pattern to rename ownership names, in <regex>=<replacement> format)
+  },
+  "verbose": true,                // Enable verbose output for debugging purposes.
+  "quiet": true                   // Suppress non-error output.
+}
+```
