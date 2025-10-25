@@ -10,7 +10,7 @@ func testOwnersOfBar() {
 
 @Test
 func testOwnersOfCallStackBar() {
-    let owners = codeOwnersOfCallStack(symbols: Bar().callStack())
+    let owners = codeOwnersFromCallStack(symbols: Bar().callStack())
 
     #if os(Linux)
     // Linux does not include method names in call stacks

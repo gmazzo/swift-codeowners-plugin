@@ -31,7 +31,7 @@ public func codeOwnersOf(nsClassName: String) -> CodeOwners? {
 #if os(Linux)
 @available(*, deprecated, message: "Call stacks are not fully supported on Linux")
 #endif
-public func codeOwnersOfCallStack(symbols: [String] = Thread.callStackSymbols, demangle: Bool = true) -> CodeOwners? {
+public func codeOwnersFromCallStack(symbols: [String] = Thread.callStackSymbols, demangle: Bool = true) -> CodeOwners? {
     for symbol in symbols {
         guard let className = classNameFromSymbol(symbol, demangle) else { continue }
         if let owners = codeOwnersOf(nsClassName: "\(className)") { return owners }
