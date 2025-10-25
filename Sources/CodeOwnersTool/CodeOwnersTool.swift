@@ -132,7 +132,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             import CodeOwnersAPI
 
             internal class _CodeOwners : CodeOwnersMappingProvider {
-                static let codeOwners: [Substring: Set<String>]? = [
+                static let codeOwners: [Substring: CodeOwners]? = [
             
             """
         for typeName in mappings.keys.sorted() {

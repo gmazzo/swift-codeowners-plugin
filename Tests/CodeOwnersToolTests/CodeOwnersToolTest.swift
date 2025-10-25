@@ -38,7 +38,7 @@ private let Default = "<#default#>"
            import CodeOwnersAPI
 
            internal class _CodeOwners : CodeOwnersMappingProvider {
-               static let codeOwners: [Substring: Set<String>]? = [
+               static let codeOwners: [Substring: CodeOwners]? = [
                    "Bar": ["\(params.ownersBar ?? "bar-devs")"],
                    "Foo": ["\(params.ownersFoo ?? "foo-devs")"],
                    "topLevelFunc": ["toplevel-dev"],
