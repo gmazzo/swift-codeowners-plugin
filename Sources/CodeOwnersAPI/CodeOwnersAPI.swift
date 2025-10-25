@@ -15,7 +15,7 @@ private class Missing : CodeOwnersMappingProvider {
 
 public func codeOwnersOf(_ of: Any?) -> CodeOwners? {
     if of == nil { return nil }
-    let type = type(of: of!)
+    let type = of as? AnyClass ?? type(of: of!)
     return codeOwnersOf(nsClassName: "\(String(reflecting: type))")
 }
 
