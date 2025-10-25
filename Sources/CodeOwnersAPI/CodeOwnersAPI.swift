@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated(unsafe) private var ownersCache: [Substring: CodeOwnersMappingProvider.Type] = [:]
+nonisolated(unsafe) private var ownersCache: [Substring: [Substring: CodeOwners]] = [:]
 private let writeLock = NSLock()
 
 public typealias CodeOwners = Set<String>
@@ -40,9 +40,10 @@ public func codeOwnersFromCallStack(symbols: [String] = Thread.callStackSymbols,
 }
 
 private func resolve(_ moduleName: Substring) -> [Substring: CodeOwners]? {
-    if let cached = ownersCache[moduleName] { return cached.codeOwners }
+    if let cached = ownersCache[moduleName] { return cached }
     
     let provider = (NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type) ?? Missing.self
-    writeLock.withLock { ownersCache[moduleName] = provider }
-    return provider.codeOwners
+    let mappings = provider.codeOwners
+    writeLock.withLock { ownersCache[moduleName] = mappings }
+    return mappings
 }
