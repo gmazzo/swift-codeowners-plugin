@@ -3,8 +3,6 @@ import ArgumentParser
 import CodeOwners
 import SwiftParser
 
-let toolDefaults: (root: URL, codeOwnersFile: URL) = findCodeOwnersFile()
-
 @main
 struct CodeOwnersTool: AsyncParsableCommand {
 
@@ -17,23 +15,23 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var sources: [URL]
 
     @Option(name: [.long, .customShort("r")], help: "The root directory where the CODEOWNERS file patterns are based from.")
-    var codeOwnersRoot: URL = toolDefaults.root
+    var codeOwnersRoot: URL = URL(filePath: settings.codeowners!.root!)
 
     @Option(name: .shortAndLong, help: "The CODEOWNERS file to use for determining ownership.")
-    var codeOwnersFile: URL = toolDefaults.codeOwnersFile
+    var codeOwnersFile: URL = URL(filePath: settings.codeowners!.file!)
 
     @Option(name: .shortAndLong, help: "The path to store the generated output CodeOwners attribution file")
     var outputFile: URL =
         FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
 
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
-    var renames: [RenameRule] = []
+    var renames: [RenameRule] = settings.renames?.map(asRenameRule) ?? []
 
-    @Flag(name: .shortAndLong, help: "Enable verbose output for debugging purposes.")
-    var verbose: Bool = false
+    @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Enable verbose output for debugging purposes.")
+    var verbose: Bool = settings.verbose ?? false
 
-    @Flag(name: .shortAndLong, help: "Suppress non-error output.")
-    var quiet: Bool = false
+    @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Suppress non-error output.")
+    var quiet: Bool = settings.quiet ?? false
 
     func run() throws {
         let fm = FileManager.default
@@ -150,19 +148,8 @@ struct CodeOwnersTool: AsyncParsableCommand {
 
 }
 
-private func findCodeOwnersFile() -> (root: URL, codeOwnersFile: URL) {
-    let fm = FileManager.default
-    let pwd = fm.pwd
-    let roots = [ pwd, fm.gitRoot ].compactMap { $0 }
-    let candidates = [
-        "CODEOWNERS",
-        ".github/CODEOWNERS",
-        ".gitlab/CODEOWNERS",
-        "docs/CODEOWNERS",
-    ]
-
-    return roots
-    .flatMap { root in candidates.map { path in (root: root, codeOwnersFile: root.appendingPathComponent(path)) } }
-    .filter { fm.fileExists(atPath: $0.codeOwnersFile.path) }
-    .first ?? (root: pwd, codeOwnersFile: pwd.appendingPathComponent("CODEOWNERS"))
+private func asRenameRule(regex: String, replace: String) -> RenameRule {
+    let argument = "\(regex)=\(replace)"
+    if let rule = RenameRule(argument: argument) { return rule }
+    fatalError("Rename rule should be in the <regex>=<replacement> format: \(argument)")
 }
