@@ -1,4 +1,7 @@
 import Foundation
+import CodeOwnersAPI
+
+let BAR_FILE_OWNERS = #codeOwners
 
 struct Bar {
 

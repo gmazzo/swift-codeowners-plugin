@@ -1,6 +1,7 @@
 // swift-tools-version:6.0
 
 import PackageDescription
+import CompilerPluginSupport
 
 let package = Package(
     name: "swift-codeowners-plugin",
@@ -12,6 +13,9 @@ let package = Package(
         .plugin(name: "CodeOwnersPlugin", targets: ["CodeOwnersPlugin"]),
         .executable(name: "CodeOwnersTool", targets: ["CodeOwnersTool"]),
         .library(name: "CodeOwnersAPI", targets: ["CodeOwnersAPI"]),
+        .plugin(name: "CodeOwnersMacroPlugin", targets: ["CodeOwnersMacroPlugin"]),
+        .executable(name: "CodeOwnersMacroTool", targets: ["CodeOwnersMacroTool"]),
+        .library(name: "CodeOwnersMacro", targets: ["CodeOwnersMacro"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "602.0.0"),
@@ -21,13 +25,31 @@ let package = Package(
     targets: [
         .plugin(name: "CodeOwnersPlugin", capability: .buildTool(), dependencies: ["CodeOwnersTool"]),
         .executableTarget(name: "CodeOwnersTool", dependencies: [
-            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            "CodeOwnersResolver",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftParser", package: "swift-syntax"),
-            .product(name: "CodeOwners", package: "swift-codeowners"),
+        ]),
+        .plugin(name: "CodeOwnersMacroPlugin", capability: .buildTool(), dependencies: ["CodeOwnersMacroTool"]),
+        .executableTarget(name: "CodeOwnersMacroTool", dependencies: [
+            "CodeOwnersResolver",
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+        ]),
+        .target(name: "CodeOwnersMacro", dependencies: [
+            "CodeOwnersResolver",
+            .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+            .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+        ]),
+        .target(name: "CodeOwnersResolver", dependencies: [
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            .product(name: "CodeOwners", package: "swift-codeowners")
         ]),
         .target(name: "CodeOwnersAPI"),
         .testTarget(name: "CodeOwnersAPITests", dependencies: ["CodeOwnersAPI"]),
         .testTarget(name: "CodeOwnersToolTests", dependencies: ["CodeOwnersTool"]),
+        .testTarget(name: "CodeOwnersResolverTests", dependencies: ["CodeOwnersResolver"]),
+        .testTarget(name: "CodeOwnersMacroTests", dependencies: [
+            "CodeOwnersMacro",
+            .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        ]),
     ]
 )

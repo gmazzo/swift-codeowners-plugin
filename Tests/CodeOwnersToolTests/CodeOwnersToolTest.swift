@@ -14,8 +14,8 @@ private let Default = "<#default#>"
 
     @Test("command produces expected output", arguments: [
         Params(args: [], ownersBar: nil, ownersFoo: nil),
-        Params(args: ["--rename", "devs=custom"], ownersBar: "bar-custom", ownersFoo: "foo-custom"),
-        Params(args: ["--rename", "o-dev="], ownersBar: nil, ownersFoo: "fos"),
+        Params(args: ["--rename=devs=custom"], ownersBar: "bar-custom", ownersFoo: "foo-custom"),
+        Params(args: ["--rename=o-dev="], ownersBar: nil, ownersFoo: "fos"),
     ])
     func commandProducesExpectedOutput(params: Params) async throws {
         let tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("CodeOwnersToolTests_\(params.hashValue)")

@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import CodeOwnersTool
+@testable import CodeOwnersResolver
 
 @Suite("Inputs tests")
 struct InputsTest {

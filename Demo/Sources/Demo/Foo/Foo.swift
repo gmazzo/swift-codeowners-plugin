@@ -1,4 +1,7 @@
 import Foundation
+import CodeOwnersAPI
+
+let FOO_FILE_OWNERS = #codeOwners
 
 class Foo {
 
