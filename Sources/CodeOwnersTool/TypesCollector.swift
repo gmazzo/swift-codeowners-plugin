@@ -16,7 +16,7 @@ class TypesCollector: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        return node.parent?.kind == .codeBlockItem ? visit(node.name.text, node.modifiers) : .skipChildren
+        return node.parent?.kind != .memberBlockItem ? visit(node.name.text, node.modifiers) : .skipChildren
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
