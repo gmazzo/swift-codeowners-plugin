@@ -3,39 +3,42 @@ import ArgumentParser
 import CodeOwners
 import SwiftParser
 
+private let defaultSettings: Settings = {
+    let fm = FileManager.default
+    if let root = fm.gitRoot, let settings = try? readSettings(atRoot: root) { return settings }
+    return try! readSettings(atRoot: fm.pwd, evenIfMissing: true)!
+}()
+
 @main
 struct CodeOwnersTool: AsyncParsableCommand {
-
+    
     static let configuration: CommandConfiguration = .init(
         commandName: "swift-codeowners",
         abstract: "Generates code ownership information into Swift files"
     )
-
+    
     @Argument(help: "The Swift source files to process")
     var sources: [URL]
-
+    
     @Option(name: [.long, .customShort("r")], help: "The root directory where the CODEOWNERS file patterns are based from.")
-    var codeOwnersRoot: URL = URL(filePath: settings.codeowners!.root!)
-
+    var codeOwnersRoot: URL = URL(fileURLWithPath: defaultSettings.codeowners!.root!)
+    
     @Option(name: .shortAndLong, help: "The CODEOWNERS file to use for determining ownership.")
-    var codeOwnersFile: URL = URL(filePath: settings.codeowners!.file!)
-
+    var codeOwnersFile: URL = URL(fileURLWithPath: defaultSettings.codeowners!.file!)
+    
     @Option(name: .shortAndLong, help: "The path to store the generated output CodeOwners attribution file")
-    var outputFile: URL =
-        FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
-
+    var outputFile: URL = FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
+    
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
-    var renames: [RenameRule] = settings.renames?.map(asRenameRule) ?? []
-
+    var renames: [RenameRule] = defaultSettings.renames?.map(asRenameRule) ?? []
+    
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Enable verbose output for debugging purposes.")
-    var verbose: Bool = settings.verbose ?? false
-
+    var verbose: Bool = defaultSettings.verbose ?? false
+    
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Suppress non-error output.")
-    var quiet: Bool = settings.quiet ?? false
-
+    var quiet: Bool = defaultSettings.quiet ?? false
+    
     func run() throws {
-        let fm = FileManager.default
-
         if (quiet && verbose) {
             print("Cannot use --quiet and --verbose flags together.", to: &stdErr)
             return
@@ -44,22 +47,24 @@ struct CodeOwnersTool: AsyncParsableCommand {
             print("No source files provided.", to: &stdErr)
             return
         }
+        
+        let fm = FileManager.default
         if (!fm.fileExists(atPath: codeOwnersFile.path)) {
             print("CODEOWNERS file not found at path: \(codeOwnersFile.path).", to: &stdErr)
             return
         }
-
+        
         let codeOwners = try parseCodeOwners(codeOwnersFile)
-
+        
         var mappings: [Substring: Set<String>] = [:]
-
+        
         try fm.walkFiles(at: sources) { source in
             if source.pathExtension != "swift" { return }
             if verbose { print("Processing source file: \(source.path)") }
-
+            
             guard let relativePath = source.relativePathTo(codeOwnersRoot) else { return }
             guard let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral) else { return }
-
+            
             do {
                 for typeName in try collectTypes(from: source) {
                     mappings[typeName] = (mappings[typeName] ?? []).union(owners)
@@ -68,11 +73,11 @@ struct CodeOwnersTool: AsyncParsableCommand {
                 print("warning: Failed to process source file '\(relativePath)': \(error)", to: &stdErr)
             }
         }
-
+        
         let content = generateContent(mappings)
         try fm.createDirectory(at: outputFile.deletingLastPathComponent(), withIntermediateDirectories: true)
         try content.write(to: outputFile, atomically: true, encoding: .utf8)
-
+        
         if (!quiet) {
             print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile.path)")
         }
@@ -105,16 +110,16 @@ struct CodeOwnersTool: AsyncParsableCommand {
     
     private func asLiteral(_ owner: Owner) -> String {
         switch owner {
-            case .user(let userId):
-                switch userId {
-                case .userName(let name): return "\(name)"
-                case .email(let email): return "\(email)"
-                }
-            case .team(let teamId):
-                return "\(teamId.organization)/\(teamId.name)"
+        case .user(let userId):
+            switch userId {
+            case .userName(let name): return "\(name)"
+            case .email(let email): return "\(email)"
             }
+        case .team(let teamId):
+            return "\(teamId.organization)/\(teamId.name)"
+        }
     }
-
+    
     private func collectTypes(from source: URL) throws -> Set<Substring> {
         let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
         let swiftFile = Parser.parse(source: swiftFileContent)
@@ -125,27 +130,26 @@ struct CodeOwnersTool: AsyncParsableCommand {
     
     private func generateContent(_ mappings: [Substring: Set<String>]) -> String {
         if mappings.isEmpty { return "" }
-
+        
         var content = """
-            import CodeOwnersAPI
-
-            internal class _CodeOwners : CodeOwnersMappingProvider {
-                static let codeOwners: [Substring: CodeOwners]? = [
-            
-            """
+        import CodeOwnersAPI
+        
+        internal class _CodeOwners : CodeOwnersMappingProvider {
+            static let codeOwners: [Substring: CodeOwners]? = [
+        
+        """
         for typeName in mappings.keys.sorted() {
             let owners = mappings[typeName]!.sorted().map { "\"\($0)\"" }.joined(separator: ", ")
             
             content += "        \"\(typeName)\": [\(owners)],\n"
         }
         content += """
-            ]
-        }
-        
-        """
+        ]
+    }
+    
+    """
         return content
     }
-
 }
 
 private func asRenameRule(regex: String, replace: String) -> RenameRule {
