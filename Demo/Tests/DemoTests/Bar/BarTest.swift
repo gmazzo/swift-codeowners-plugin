@@ -19,3 +19,15 @@ func testOwnersOfCallStackBar() {
     #expect(owners == ["bar-devs"])
     #endif
 }
+
+@Test
+func ownersOfGenericBarStruct() {
+    #expect(["bar-devs"] == codeOwnersOf(GenericBarStruct.self))
+    #expect(["bar-devs"] == codeOwnersOf(GenericBarStruct(generic: GenericStruct(value: Bar()))))
+}
+
+@Test
+func ownersOfGenericBarClass() {
+    #expect(["bar-devs"] == codeOwnersOf(GenericBarClass.self))
+    #expect(["bar-devs"] == codeOwnersOf(GenericBarClass(value: Bar())))
+}

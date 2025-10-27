@@ -19,3 +19,15 @@ func testOwnersOfCallStackInFoo() {
     #expect(owners == ["foo-devs"])
     #endif
 }
+
+@Test
+func ownersOfGenericFoo() {
+    #expect(["foo-devs"] == codeOwnersOf(GenericFooStruct.self))
+    #expect(["foo-devs"] == codeOwnersOf(GenericFooStruct(generic: GenericStruct(value: Foo()))))
+}
+
+@Test
+func ownersOfGenericFooClass() {
+    #expect(["foo-devs"] == codeOwnersOf(GenericFooClass.self))
+    #expect(["foo-devs"] == codeOwnersOf(GenericFooClass(value: Foo())))
+}
