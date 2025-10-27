@@ -23,3 +23,9 @@ struct BarWithMyProtocol : MyProtocol {
 class BarExtendingFoo: Foo {}
 
 private struct PrivateBar {}
+
+struct GenericBarStruct {
+    let generic: GenericStruct<Bar>
+}
+
+class GenericBarClass : GenericClass<Bar> {}

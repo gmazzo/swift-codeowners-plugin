@@ -21,3 +21,9 @@ class FooWithMyProtocol : MyProtocol {
 }
 
 private class PrivateFoo {}
+
+struct GenericFooStruct {
+    let generic: GenericStruct<Foo>
+}
+
+class GenericFooClass : GenericClass<Foo> {}
