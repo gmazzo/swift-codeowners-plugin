@@ -60,8 +60,8 @@ class MyClass {
 }
 ```
 > [!NOTE]
-> Due Swift macros limitations, the `#codeowners` macro can be provided out-of-the-box, 
-> and it requires to define an ad-hoc `.macro` target in your project.
+> Due Swift macros limitations, the `#codeowners` macro can not be provided out-of-the-box, 
+> and it requires instead to define an ad-hoc `.macro` target in your project.
 
 ### Setting up the `#codeowners` macro
 First, declare a new macro target in your `Package.swift` (if you don't have one yet):
