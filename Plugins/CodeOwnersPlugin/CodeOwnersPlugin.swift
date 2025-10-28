@@ -9,6 +9,11 @@ struct CodeOwnersPlugin: BuildToolPlugin {
             Diagnostics.error("Target \(target.name) is not a Swift source module.")
             return []
         }
+        
+        guard let inputs = Inputs.lookup(atRoot: context.package.directoryURL) else {
+            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(target.name)")
+            return []
+        }
 
         let inputFiles = swiftTarget.sourceFiles(withSuffix: ".swift").map(\.url)
         if (inputFiles.isEmpty) {
@@ -23,7 +28,7 @@ struct CodeOwnersPlugin: BuildToolPlugin {
             displayName: "CodeOwner attribution",
             executable: tool.url,
             arguments: inputFiles.map(\.path) + ["--output-file", outputFile.path],
-            inputFiles: inputFiles,
+            inputFiles: inputs.files + inputFiles,
             outputFiles: [outputFile]
         )]
     }

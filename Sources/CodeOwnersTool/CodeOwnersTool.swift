@@ -3,11 +3,7 @@ import ArgumentParser
 import CodeOwners
 import SwiftParser
 
-private let defaultSettings: Settings = {
-    let fm = FileManager.default
-    if let root = fm.gitRoot, let settings = try? readSettings(atRoot: root) { return settings }
-    return try! readSettings(atRoot: fm.pwd, evenIfMissing: true)!
-}()
+private let defaults = try! Inputs.lookupAlways().resolve()
 
 @main
 struct CodeOwnersTool: AsyncParsableCommand {
@@ -21,22 +17,22 @@ struct CodeOwnersTool: AsyncParsableCommand {
     var sources: [URL]
     
     @Option(name: [.long, .customShort("r")], help: "The root directory where the CODEOWNERS file patterns are based from.")
-    var codeOwnersRoot: URL = URL(fileURLWithPath: defaultSettings.codeowners!.root!)
+    var codeOwnersRoot: URL = defaults.codeOwnersRoot
     
     @Option(name: .shortAndLong, help: "The CODEOWNERS file to use for determining ownership.")
-    var codeOwnersFile: URL = URL(fileURLWithPath: defaultSettings.codeowners!.file!)
+    var codeOwnersFile: URL = defaults.codeOwnersFile
     
     @Option(name: .shortAndLong, help: "The path to store the generated output CodeOwners attribution file")
-    var outputFile: URL = FileManager.default.pwd.appendingPathComponent("GeneratedSources/CodeOwners.swift")
+    var outputFile: URL = FileManager.default.currentDirectory.appendingPathComponent("GeneratedSources/CodeOwners.swift")
     
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
-    var renames: [RenameRule] = defaultSettings.renames?.map(asRenameRule) ?? []
+    var renames: [RenameRule] = defaults.renames
     
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Enable verbose output for debugging purposes.")
-    var verbose: Bool = defaultSettings.verbose ?? false
+    var verbose: Bool = defaults.verbose
     
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Suppress non-error output.")
-    var quiet: Bool = defaultSettings.quiet ?? false
+    var quiet: Bool = defaults.quiet
     
     func run() throws {
         if (quiet && verbose) {
