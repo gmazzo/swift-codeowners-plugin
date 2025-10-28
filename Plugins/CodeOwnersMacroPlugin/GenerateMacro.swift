@@ -1,0 +1,1 @@
+../../Sources/CodeOwnersMacroTool/GenerateMacro.swift

@@ -1,6 +1,7 @@
 import Foundation
 import ArgumentParser
 import CodeOwners
+import CodeOwnersResolver
 import SwiftParser
 
 private let defaults = try! Inputs.lookupAlways().resolve()
@@ -50,23 +51,27 @@ struct CodeOwnersTool: AsyncParsableCommand {
             return
         }
         
-        let codeOwners = try parseCodeOwners(codeOwnersFile)
+        let resolver = try resolveCodeOwners(
+            file: codeOwnersFile,
+            root: codeOwnersRoot,
+            renames: renames
+        )
         
         var mappings: [Substring: Set<String>] = [:]
         
-        try fm.walkFiles(at: sources) { source in
-            if source.pathExtension != "swift" { return }
-            if verbose { print("Processing source file: \(source.path)") }
+        try fm.walkFiles(at: sources) { sourceFile in
+            if sourceFile.pathExtension != "swift" { return }
+            if verbose { print("Processing source file: \(sourceFile.relativePath)") }
             
-            guard let relativePath = source.relativePathTo(codeOwnersRoot) else { return }
-            guard let owners = codeOwners.codeOwner(pattern: relativePath)?.owners.map(asLiteral) else { return }
+            guard let owners = resolver.codeOwnersOf(sourceFile) else { return }
             
             do {
-                for typeName in try collectTypes(from: source) {
+                for typeName in try collectTypes(from: sourceFile) {
                     mappings[typeName] = (mappings[typeName] ?? []).union(owners)
                 }
+
             } catch {
-                print("warning: Failed to process source file '\(relativePath)': \(error)", to: &stdErr)
+                print("warning: Failed to process source file '\(sourceFile.relativePath)': \(error)", to: &stdErr)
             }
         }
         
@@ -78,44 +83,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile.path)")
         }
     }
-    
-    private func parseCodeOwners(_ codeOwnersFile: URL) throws -> CodeOwners {
-        let content = try String(contentsOf: codeOwnersFile, encoding: .utf8)
-        let parsed = CodeOwners.parse(file: content)
-        if renames.isEmpty { return parsed }
-        
-        let renamedLines = parsed.lines.map { line in
-            switch line {
-            case .codeOwner(let codeOwner):
-                let renamedOwners = codeOwner.owners.map { owner in
-                    var literal = asLiteral(owner)
-                    for rename in renames {
-                        literal = literal.replacing(rename.regex, with: rename.replacement)
-                    }
-                    return Owner.user(UserIdentifier.userName(literal)) // we really don't care on the kind of owner
-                }
-                
-                return CodeOwnerLine.codeOwner(CodeOwner(pattern: codeOwner.pattern, owners: renamedOwners))
-                
-            default:
-                return line
-            }
-        }
-        return CodeOwners(lines: renamedLines)
-    }
-    
-    private func asLiteral(_ owner: Owner) -> String {
-        switch owner {
-        case .user(let userId):
-            switch userId {
-            case .userName(let name): return "\(name)"
-            case .email(let email): return "\(email)"
-            }
-        case .team(let teamId):
-            return "\(teamId.organization)/\(teamId.name)"
-        }
-    }
-    
+
     private func collectTypes(from source: URL) throws -> Set<Substring> {
         let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
         let swiftFile = Parser.parse(source: swiftFileContent)

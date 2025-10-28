@@ -3,7 +3,7 @@ import ArgumentParser
 
 extension RenameRule: ExpressibleByArgument {
     
-    init?(argument: String) {
+    public init?(argument: String) {
         let parts = argument.split(separator: "=", maxSplits: 2)
         guard parts.count == 2 || argument.last == "=" else { return nil }
         

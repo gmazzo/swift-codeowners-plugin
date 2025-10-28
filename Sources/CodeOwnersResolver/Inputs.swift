@@ -1,26 +1,26 @@
 import Foundation
 
-struct Inputs : Sendable {
-    let codeOwnersRoot: URL
-    let codeOwnersFile: URL?
-    let settingsFile: URL?
+public struct Inputs : Sendable {
+    public let codeOwnersRoot: URL
+    public let codeOwnersFile: URL?
+    public let settingsFile: URL?
 
-    var files: [URL] { return [codeOwnersFile, settingsFile].compactMap { $0 } }
+    public var files: [URL] { return [codeOwnersFile, settingsFile].compactMap { $0 } }
     
-    struct Resolved : Sendable {
-        let codeOwnersRoot: URL
-        let codeOwnersFile: URL
-        var renames: [RenameRule] = []
-        var verbose: Bool = false
-        var quiet: Bool = false
+    public struct Resolved : Sendable {
+        public let codeOwnersRoot: URL
+        public let codeOwnersFile: URL
+        public var renames: [RenameRule] = []
+        public var verbose: Bool = false
+        public var quiet: Bool = false
     }
 }
 
-struct RenameRule : Sendable {
-    let regex: String
-    let replacement: String
+public struct RenameRule : Sendable {
+    public let regex: String
+    public let replacement: String
     
-    init(regex: String, replacement: String) {
+    public init(regex: String, replacement: String) {
         _ = try! Regex(regex) // makes sure it's valid
         self.regex = regex
         self.replacement = replacement
@@ -42,7 +42,7 @@ struct SettingsFile : Decodable, Equatable {
     }
 }
 
-extension Inputs {
+public extension Inputs {
     
     static func lookupAlways(atRoot: URL? = nil) -> Inputs {
         let root = atRoot ?? FileManager.default.currentDirectory
@@ -94,6 +94,14 @@ extension Inputs {
     
 }
 
+extension [RenameRule] {
+    
+    public func asDict() -> [String: String] {
+        return self.reduce(into: [:]) { $0[$1.regex] = $1.replacement }
+    }
+    
+}
+
 private func gitRoot(_ atRoot: URL) -> URL? {
     let pipe = Pipe()
     
@@ -121,7 +129,7 @@ private func defaultCodeOwnersFile(atRoot: URL) -> URL {
 
 extension FileManager {
     
-    var currentDirectory: URL { return URL(filePath: FileManager.default.currentDirectoryPath) }
+    public var currentDirectory: URL { return URL(filePath: FileManager.default.currentDirectoryPath) }
     
     func findFile(at dir: URL, _ candidateNames: String...) -> URL? {
         for candidate in candidateNames {
