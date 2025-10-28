@@ -13,8 +13,8 @@ import Foundation
     (target: "/private/var/logs/x/y/z/log.txt", base: "/var/logs", expected: "../../private/var/logs/x/y/z/log.txt"),
 ])
 func URL_relativePathTo(target: String, base: String, expected: String) {
-    let targetURL = URL(fileURLWithPath: target)
-    let baseURL = URL(fileURLWithPath: base)
+    let targetURL = URL(filePath: target)
+    let baseURL = URL(filePath: base)
     let actual = targetURL.relativePathTo(baseURL)
 
     #expect(expected == actual)

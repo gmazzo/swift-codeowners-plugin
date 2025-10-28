@@ -1,0 +1,1 @@
+../../Sources/CodeOwnersTool/Inputs.swift
