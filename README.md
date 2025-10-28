@@ -127,7 +127,7 @@ and it can be located at any of the following paths:
 
 Where `rootDir` is either project's or GIT's root directory
 
-# The `[.codeowners-tool.json](Demo/.codeowners-tool.json)` configuration file
+# The [`.codeowners-tool.json`](./Demo/.codeowners-tool.json) configuration file
 You can customize the plugin behavior by adding a `.codeowners-tool.json` file:
 
 ```json
