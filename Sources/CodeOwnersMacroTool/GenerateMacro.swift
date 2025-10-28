@@ -17,12 +17,16 @@ func generateMacro(
     import CodeOwnersMacro
     
     class CodeOwnersMacro : CodeOwnersMacroBase {
-        static let codeOwnersRoot = URL(filePath: #"\(codeOwnersRoot.relativePath)"#)
-        static let codeOwnersContent =
+        nonisolated(unsafe) static let resolver = {
+            try! resolveCodeOwners(
+                fileContent:
     #\"""
     \(codeOwnersContent)
-    \"""#
-        static let renameRules = [ \(renamesContent) ]
+    \"""#,
+                root: URL(filePath: #"\(codeOwnersRoot.relativePath)"#),
+                renames: [ \(renamesContent) ]
+            )
+        }()
     }
     """
     

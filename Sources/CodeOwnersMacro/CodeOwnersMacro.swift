@@ -4,13 +4,11 @@ import SwiftSyntaxMacros
 import CodeOwnersResolver
 
 public protocol CodeOwnersMacroBase: ExpressionMacro {
-    static var codeOwnersRoot: URL { get }
-    static var codeOwnersContent: String { get }
-    static var renameRules: [RenameRule] { get }
+    static var resolver: CodeOwnersResolver { get }
 }
 
 extension CodeOwnersMacroBase {
-
+    
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
@@ -22,7 +20,6 @@ extension CodeOwnersMacroBase {
         let filePath = try JSONDecoder().decode(String.self, from: filePathLiteral.data(using: .utf8)!)
         let file = URL(filePath: filePath)
         
-        let resolver = try resolveCodeOwners(fileContent: codeOwnersContent, root: codeOwnersRoot, renames: renameRules)
         let owners = resolver.codeOwnersOf(file)
         return ExprSyntax(literal: owners)
     }
