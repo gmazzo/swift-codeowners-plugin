@@ -8,7 +8,7 @@ func generateMacro(
 ) throws {
     let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
     let renamesContent = renames
-        .map { (regex, replacement) in "RenameRule(regex: #\"\(regex)\"#, replacement: #\"\(replacement)\"#)" }
+        .map { (regex, replacement) in "\n                RenameRule(regex: #\"\(regex)\"#, replacement: #\"\(replacement)\"#)" }
         .joined(separator: ", ")
     
     let content = """
@@ -20,11 +20,12 @@ func generateMacro(
         nonisolated(unsafe) static let resolver = {
             try! resolveCodeOwners(
                 fileContent:
-    #\"""
-    \(codeOwnersContent)
-    \"""#,
+                #\"""
+                \(codeOwnersContent.replacingOccurrences(of: "\n", with: "\n            "))
+                \"""#,
                 root: URL(filePath: #"\(codeOwnersRoot.relativePath)"#),
-                renames: [ \(renamesContent) ]
+                renames: [ \(renamesContent) 
+                ]
             )
         }()
     }
