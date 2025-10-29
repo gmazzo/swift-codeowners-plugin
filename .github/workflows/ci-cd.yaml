@@ -15,13 +15,13 @@ permissions:
 jobs:
   ci-cd:
     name: CI/CD (${{ matrix.name }}, Swift ${{ matrix.swift-version }}, ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os == 'ios' && 'macos' || matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
         name: [ 'Plugin', 'Demo' ]
         swift-version: [ '6.0', 'latest' ]
-        os: [ 'ubuntu', 'macos' ]
+        os: [ 'ubuntu', 'macos', 'ios' ]
         include:
           - name: Plugin
             projectDir: ""
@@ -38,7 +38,9 @@ jobs:
           swift-version: ${{ matrix.swift-version }}
       - name: Test & Build
         working-directory: ${{ matrix.projectDir }}
-        run: swift test --xunit-output .build/test-results.xml --enable-code-coverage
+        env:
+          SWIFT_ARGS: ${{ matrix.os == 'ios' && format('-Xswiftc "-sdk" -Xswiftc "`xcrun --sdk iphonesimulator --show-sdk-path`" -Xswiftc "-target" -Xswiftc "{0}-apple-ios{1}-simulator"', runner.arch, '16.0') || '' }}
+        run: swift test --xunit-output .build/test-results.xml --enable-code-coverage ${{ env.SWIFT_ARGS }}
       - name: Publish Test Report
         if: ${{ !cancelled() }}
         uses: gmazzo/publish-report-annotations@v1
