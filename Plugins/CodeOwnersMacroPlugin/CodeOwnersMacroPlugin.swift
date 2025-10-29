@@ -14,11 +14,9 @@ struct CodeOwnersPlugin: BuildToolPlugin {
         let resolved = try inputs.resolve()
         let macroFile = context.pluginWorkDirectoryURL.appendingPathComponent("CodeOwnersMacro.swift")
         
-        // FIXME apparenly Xcode fails to run the `.buildCommand` when a `BuildToolPlugin` is applied to a `.macro` project
-        //  so we run manually the tool once now
-        if ProcessInfo.processInfo.environment["__CFBundleIdentifier"] != nil {
-            Diagnostics.warning("Xcode does not fully supports build plugins on macro targets. CODEOWNERS may not be updated unless you do a clean build")
-            
+        if ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode" {
+            // FIXME Xcode early fails due missing output file, before running `.buildCommand`
+            //  so we also run the macro generation here as a workaround.
             try generateMacro(
                 codeOwnersRoot: resolved.codeOwnersRoot,
                 codeOwnersFile: resolved.codeOwnersFile,
