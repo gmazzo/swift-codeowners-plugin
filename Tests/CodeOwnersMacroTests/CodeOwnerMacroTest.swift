@@ -31,10 +31,10 @@ struct CodeOwnersMacrosTest {
         
         assertMacroExpansion(
           """
-          let CODEOWNERS: Set<String> = #codeOwners
+          let CODEOWNERS: [String] = #codeOwners
           """,
           expandedSource: """
-            let CODEOWNERS: Set<String> = \(ownersLiteral.map { "[\($0)]" } ?? "nil")
+            let CODEOWNERS: [String] = \(ownersLiteral.map { "[\($0)]" } ?? "nil")
             """,
           macroSpecs: [ "codeOwners" : MacroSpec(type: CodeOwnersMacroTestImpl.self) ],
           testFileName: params.file

@@ -5,10 +5,10 @@ public struct CodeOwnersResolver {
     fileprivate let root: URL
     fileprivate let entries: CodeOwners
     
-    public func codeOwnersOf(_ file: URL) -> Set<String>? {
+    public func codeOwnersOf(_ file: URL) -> [String]? {
         guard let relativePath = file.relativePathTo(root) else { return nil }
         guard let owners = entries.codeOwner(pattern: relativePath)?.owners else { return nil }
-        return Set(owners.map(asLiteral))
+        return owners.map(asLiteral)
     }
 }
 

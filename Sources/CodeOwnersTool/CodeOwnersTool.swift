@@ -57,7 +57,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             renames: renames
         )
         
-        var mappings: [Substring: Set<String>] = [:]
+        var mappings: [Substring: [String]] = [:]
         
         try fm.walkFiles(at: sources) { sourceFile in
             if sourceFile.pathExtension != "swift" { return }
@@ -67,7 +67,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             
             do {
                 for typeName in try collectTypes(from: sourceFile) {
-                    mappings[typeName] = (mappings[typeName] ?? []).union(owners)
+                    mappings[typeName] = (mappings[typeName] ?? []) + owners
                 }
 
             } catch {
@@ -92,7 +92,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
         return collector.rootTypes
     }
     
-    private func generateContent(_ mappings: [Substring: Set<String>]) -> String {
+    private func generateContent(_ mappings: [Substring: [String]]) -> String {
         if mappings.isEmpty { return "" }
         
         var content = """
@@ -103,7 +103,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
         
         """
         for typeName in mappings.keys.sorted() {
-            let owners = mappings[typeName]!.sorted().map { "\"\($0)\"" }.joined(separator: ", ")
+            let owners = mappings[typeName]!.distinct().map { "\"\($0)\"" }.joined(separator: ", ")
             
             content += "        \"\(typeName)\": [\(owners)],\n"
         }
@@ -120,4 +120,11 @@ private func asRenameRule(regex: String, replace: String) -> RenameRule {
     let argument = "\(regex)=\(replace)"
     if let rule = RenameRule(argument: argument) { return rule }
     fatalError("Rename rule should be in the <regex>=<replacement> format: \(argument)")
+}
+
+private extension Sequence where Iterator.Element: Hashable {
+  func distinct() -> [Iterator.Element] {
+    var seen: Set<Iterator.Element> = []
+    return filter { seen.insert($0).inserted }
+  }
 }
