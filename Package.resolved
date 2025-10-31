@@ -1,5 +1,5 @@
 {
-  "originHash" : "cdc929a68181b6b8556c72e379a1ca83762409bca06132a196e56d9888970e07",
+  "originHash" : "dce7aec65a04cbd0a5f04394a3bd03860650d4d70722e2b18058f5ddf5347cc4",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mtj0928/swift-codeowners",
       "state" : {
-        "revision" : "3a9cd74467b736500c7d7d7b841658dd1adae8a6",
-        "version" : "0.1.0"
+        "revision" : "649b0c58468f8cfeb70949cbc9f5e235dbe8d46e",
+        "version" : "0.1.1"
       }
     },
     {
