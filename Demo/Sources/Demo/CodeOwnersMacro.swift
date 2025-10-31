@@ -1,2 +1,2 @@
 @freestanding(expression)
-public macro codeOwners() -> Set<String>? = #externalMacro(module: "Macros", type: "CodeOwnersMacro")
+public macro codeOwners() -> [String]? = #externalMacro(module: "Macros", type: "CodeOwnersMacro")

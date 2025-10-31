@@ -111,7 +111,7 @@ Finally, import the macro module and use the `#codeowners` macro in your code:
 
 ```swift
 @freestanding(expression)
-public macro codeOwners() -> Set<String>? = #externalMacro(module: "MyMacros", type: "CodeOwnersMacro")
+public macro codeOwners() -> [String]? = #externalMacro(module: "MyMacros", type: "CodeOwnersMacro")
 ```
 
 # The CODEOWNERS file

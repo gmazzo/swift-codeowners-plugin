@@ -4,7 +4,7 @@ private let lock = NSLock()
 nonisolated(unsafe) private var ownersCache: [Substring: [Substring: CodeOwners]] = [:]
 nonisolated(unsafe) private let nsClassNameRegEx = /(\w+)\.(\w+)/
 
-public typealias CodeOwners = Set<String>
+public typealias CodeOwners = [String] // order is important for attribution
 
 public protocol CodeOwnersMappingProvider  {
     static var codeOwners: [Substring: CodeOwners]? { get }
