@@ -43,7 +43,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: gmazzo/publish-report-annotations@v1
         with:
-          checkName: Test Results (${{ matrix.name }})
+          checkName: Test Results (${{ matrix.name }}, Swift ${{ matrix.swift-version }}, ${{ matrix.os }})
           reports: '**/.build/test-results*.xml'
       - name: Extract coverage data
         if: ${{ runner.os == 'linux' }}
