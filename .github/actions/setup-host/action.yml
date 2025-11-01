@@ -5,6 +5,9 @@ inputs:
   swift-version:
     description: 'The Swift version to install'
     required: true
+  cache-suffix:
+    description: 'Suffix to append to cache keys'
+    required: true
 
 runs:
   using: "composite"
@@ -17,6 +20,6 @@ runs:
       uses: actions/cache@v4
       with:
         path: '**/.build/'
-        key: ${{ runner.os }}-${{ inputs.swift-version }}-spm-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-swift-${{ inputs.swift-version }}-${{ inputs.cache-suffix }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
-          ${{ runner.os }}-${{ inputs.swift-version }}-spm-
+          ${{ runner.os }}-swift-${{ inputs.swift-version }}-${{ inputs.cache-suffix }}-spm-

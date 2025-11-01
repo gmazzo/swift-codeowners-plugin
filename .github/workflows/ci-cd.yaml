@@ -36,6 +36,7 @@ jobs:
         uses: ./.github/actions/setup-host
         with:
           swift-version: ${{ matrix.swift-version }}
+          cache-suffix: ${{ matrix.name }}
       - name: Test & Build
         working-directory: ${{ matrix.projectDir }}
         run: swift test --xunit-output .build/test-results.xml --enable-code-coverage
