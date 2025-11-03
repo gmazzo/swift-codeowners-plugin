@@ -1,6 +1,6 @@
 import Foundation
 
-private let lock = NSLock()
+private let queue = DispatchQueue(label: "CodeOwners cache", attributes: .concurrent)
 nonisolated(unsafe) private var ownersCache: [Substring: [Substring: CodeOwners]] = [:]
 nonisolated(unsafe) private let nsClassNameRegEx = /(\w+)\.(\w+)/
 
@@ -41,11 +41,12 @@ public func codeOwnersFromCallStack(symbols: [String] = Thread.callStackSymbols,
 }
 
 private func resolve(_ moduleName: Substring) -> [Substring: CodeOwners]? {
-    lock.withLock {
-        if let cached = ownersCache[moduleName] { return cached }
-        
-        let provider = (NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type) ?? Missing.self
-        let mappings = provider.codeOwners
-        return mappings
+    if let cached = queue.sync(execute: { ownersCache[moduleName] }) {
+        return cached
     }
+    
+    let provider = (NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type) ?? Missing.self
+    let mappings = provider.codeOwners
+    queue.sync(flags: .barrier) { ownersCache[moduleName] = mappings }
+    return mappings
 }
