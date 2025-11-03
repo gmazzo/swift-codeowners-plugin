@@ -5,37 +5,31 @@ import Testing
 @Suite("CodeOwners API")
 struct CodeOwnersAPITest {
     
-    @Test
-    func codeOwnersOfNil() {
-        #expect(nil == codeOwnersOf(nil))
+    struct Params : Sendable {
+        let expected: CodeOwners?
+        let input: Sendable?
     }
     
-    @Test
-    func codeOwnersOfFoundationClass() {
-        #expect(nil == codeOwnersOf(URL(string: "http://google.com")))
-    }
-    
-    @Test
-    func codeOwnersOfTestStruct() {
-        #expect([ "foo" ] == codeOwnersOf(TestStruct.self))
-        #expect([ "foo" ] == codeOwnersOf(TestStruct()))
-        #expect([ "foo" ] == codeOwnersOf(TestStruct.Inner.self))
-        #expect([ "foo" ] == codeOwnersOf(TestStruct.Inner()))
-    }
-    
-    @Test
-    func codeOwnersOfTestEnum() {
-        #expect([ "foo", "bar" ] == codeOwnersOf(TestEnum.self))
-        #expect([ "foo", "bar" ] == codeOwnersOf(TestEnum.AAA))
-        #expect([ "foo", "bar" ] == codeOwnersOf(TestEnum.BBB))
-    }
-    
-    @Test
-    func codeOwnersOfTestClass() {
-        #expect([ "baz" ] == codeOwnersOf(TestClass.self))
-        #expect([ "baz" ] == codeOwnersOf(TestClass()))
-        #expect([ "baz" ] == codeOwnersOf(TestClass.Inner.self))
-        #expect([ "baz" ] == codeOwnersOf(TestClass.Inner()))
+    @Test(.serialized, arguments: [
+        Params(expected: nil, input: nil),
+        Params(expected: nil, input: URL.self),
+        Params(expected: nil, input: URL(string: "https://google.com")),
+        Params(expected: [ "foo" ], input: TestStruct.self),
+        Params(expected: [ "foo" ], input: TestStruct()),
+        Params(expected: [ "foo" ], input: TestStruct.Inner.self),
+        Params(expected: [ "foo" ], input: TestStruct.Inner()),
+        Params(expected: [ "foo", "bar" ], input: TestEnum.self),
+        Params(expected: [ "foo", "bar" ], input: TestEnum.AAA),
+        Params(expected: [ "foo", "bar" ], input: TestEnum.BBB),
+        Params(expected: [ "baz" ], input: TestClass.self),
+        Params(expected: [ "baz" ], input: TestClass()),
+        Params(expected: [ "baz" ], input: TestClass.Inner.self),
+        Params(expected: [ "baz" ], input: TestClass.Inner()),
+    ])
+    func codeOwnersOfResolution(params: Params) {
+        let owners = codeOwnersOf(params.input)
+        
+        #expect(params.expected == owners)
     }
     
     @Test
@@ -62,11 +56,12 @@ struct CodeOwnersAPITest {
 
 struct TestStruct { struct Inner {} }
 enum TestEnum { case AAA; case BBB }
-final class TestClass {
-    final class Inner {}
+final class TestClass : Sendable {
+    final class Inner : Sendable {}
     func doBlock<T>(block: () -> T) -> T { block() }
 }
 
+// this will be the a generated class by the plugin
 class _CodeOwners : CodeOwnersMappingProvider {
     nonisolated(unsafe) static var codeOwners: [Substring : CodeOwners]? = [
         "TestStruct" : [ "foo" ],
