@@ -47,6 +47,6 @@ private func resolve(_ moduleName: Substring) -> [Substring: CodeOwners]? {
     
     let provider = (NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type) ?? Missing.self
     let mappings = provider.codeOwners
-    queue.sync(flags: .barrier) { ownersCache[moduleName] = mappings }
+    queue.async { ownersCache[moduleName] = mappings }
     return mappings
 }
