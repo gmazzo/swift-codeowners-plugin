@@ -1,17 +1,11 @@
 import Foundation
 
-private let queue = DispatchQueue(label: "CodeOwners cache", attributes: .concurrent)
-nonisolated(unsafe) private var ownersCache: [Substring: [Substring: CodeOwners]] = [:]
 nonisolated(unsafe) private let nsClassNameRegEx = /(\w+)\.(\w+)/
 
 public typealias CodeOwners = [String] // order is important for attribution
 
 public protocol CodeOwnersMappingProvider  {
     static var codeOwners: [Substring: CodeOwners]? { get }
-}
-
-private class Missing : CodeOwnersMappingProvider {
-    static let codeOwners: [Substring: CodeOwners]? = nil
 }
 
 public func codeOwnersOf(_ of: Any?) -> CodeOwners? {
@@ -41,12 +35,6 @@ public func codeOwnersFromCallStack(symbols: [String] = Thread.callStackSymbols,
 }
 
 private func resolve(_ moduleName: Substring) -> [Substring: CodeOwners]? {
-    if let cached = queue.sync(execute: { ownersCache[moduleName] }) {
-        return cached
-    }
-    
-    let provider = (NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type) ?? Missing.self
-    let mappings = provider.codeOwners
-    queue.async { ownersCache[moduleName] = mappings }
-    return mappings
+    let provider = NSClassFromString("\(moduleName)._CodeOwners") as? CodeOwnersMappingProvider.Type
+    return provider?.codeOwners
 }
