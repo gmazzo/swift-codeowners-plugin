@@ -19,8 +19,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "602.0.0"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
-        .package(url: "https://github.com/mtj0928/swift-codeowners", from: "0.1.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.6.2"),
+        .package(url: "https://github.com/mtj0928/swift-codeowners", from: "0.1.1"),
     ],
     targets: [
         .plugin(name: "CodeOwnersPlugin", capability: .buildTool(), dependencies: ["CodeOwnersTool"]),
