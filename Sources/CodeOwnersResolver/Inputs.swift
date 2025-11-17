@@ -15,6 +15,7 @@ public struct Inputs : Sendable {
         public let codeOwnersRoot: URL
         public let codeOwnersFile: URL
         public var renames: [RenameRule] = []
+        public var hybridAttribution: Bool = true
         public var verbose: Bool = false
         public var quiet: Bool = false
     }
@@ -34,6 +35,7 @@ public struct RenameRule : Sendable {
 struct SettingsFile : Decodable, Equatable {
     let codeowners: CodeOwners?
     let renames: [String: String]?
+    let hybridAttribution: Bool?
     let verbose: Bool?
     let quiet: Bool?
     
@@ -91,6 +93,7 @@ public extension Inputs {
             codeOwnersRoot: root,
             codeOwnersFile: settings.codeowners?.fileURL ?? codeOwnersFile ?? defaultCodeOwnersFile(atRoot: root),
             renames: renames ?? [],
+            hybridAttribution: settings.hybridAttribution ?? true,
             verbose: settings.verbose ?? false,
             quiet: settings.quiet ?? false
         )

@@ -4,9 +4,6 @@ import CodeOwnersResolver
 import SwiftParser
 import PathKit
 
-private typealias FileResult = (rootTypes: Set<Substring>, extensionTypes: Set<Substring>, owners: [String])
-private typealias TypeOwnership = (main: [String], fromExtension: [String])
-
 private let defaults = try! Inputs.lookupAlways().resolve()
 
 @main
@@ -32,6 +29,9 @@ struct CodeOwnersTool: AsyncParsableCommand {
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
     var renames: [RenameRule] = defaults.renames
     
+    @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Enable hybrid attribution approach (static for final types, and dynamic for classes and generic structs.")
+    var hybridAttribution: Bool = defaults.hybridAttribution
+
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Enable verbose output for debugging purposes.")
     var verbose: Bool = defaults.verbose
     
@@ -59,17 +59,19 @@ struct CodeOwnersTool: AsyncParsableCommand {
             renames: renames
         )
         
-        let mappings = await processSources(resolver)
-        let content = generateContent(mappings)
+        let ownership = await processSources(resolver)
+        let content = generateContent(ownership)
         try outputFile.parent().mkpath()
         try outputFile.write(content)
         
         if (!quiet) {
-            print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile)")
+            let count = ownership.finalTypes.count + ownership.extensionTypes.count + ownership.extensibleTypes.count
+            
+            print("Generated CodeOwners attribution for \(count) types at: \(outputFile)")
         }
     }
     
-    private func processSources(_ resolver: CodeOwnersResolver) async -> [Substring: TypeOwnership] {
+    private func processSources(_ resolver: CodeOwnersResolver) async -> Ownership {
         await withTaskGroup(of: FileResult?.self) { group in
             for source in sources {
                 if (source.isDirectory) {
@@ -85,20 +87,13 @@ struct CodeOwnersTool: AsyncParsableCommand {
                 
             }
             
-            var mappings: [Substring: TypeOwnership] = [:]
-            for await (rootTypes, extensionTypes, owners) in (group.compactMap { $0 }) {
-                for typeName in rootTypes {
-                    let current = mappings[typeName] ?? ([], [])
-                    
-                    mappings[typeName] = (current.main + owners, current.fromExtension)
-                }
-                for typeName in extensionTypes {
-                    let current = mappings[typeName] ?? ([], [])
-                    
-                    mappings[typeName] = (current.main, current.fromExtension + owners)
-                }
+            var ownership = Ownership()
+            for await result in (group.compactMap { $0 }) {
+                computeOwnership(result.finalTypes, result.owners, &ownership.finalTypes)
+                computeOwnership(result.extensibleTypes, result.owners, &ownership.extensibleTypes)
+                computeOwnership(result.extensionTypes, result.owners, &ownership.extensionTypes)
             }
-            return mappings
+            return ownership
         }
     }
     
@@ -113,7 +108,12 @@ struct CodeOwnersTool: AsyncParsableCommand {
         
         guard let owners: [String] = resolver.codeOwnersOf(sourceFile) else { return nil }
         guard let collector = collectTypes(from: sourceFile) else { return nil }
-        return (collector.rootTypes, collector.extensionTypes, owners)
+        return FileResult(
+            finalTypes: collector.finalTypes,
+            extensibleTypes: collector.extensibleTypes,
+            extensionTypes: collector.extensionTypes,
+            owners: owners
+        )
     }
 
     private func collectTypes(from sourceFile: Path) -> TypesCollector? {
@@ -130,31 +130,68 @@ struct CodeOwnersTool: AsyncParsableCommand {
         }
     }
     
-    private func generateContent(_ mappings: [Substring: TypeOwnership]) -> String {
-        if mappings.isEmpty { return "" }
-        
+    private func computeOwnership(_ types: Set<Substring>, _ owners: [String], _ into: inout [Substring: [String]]) {
+        for typeName in types {
+            into[typeName] = (into[typeName] ?? []) + owners
+        }
+    }
+    
+    private func generateContent(_ ownership: Ownership) -> String {
         var content = """
         import CodeOwnersAPI
         
-        internal class _CodeOwners : CodeOwnersMappingProvider {
-            static let codeOwners: [Substring: CodeOwners]? = [
-        
         """
-        for typeName in mappings.keys.sorted() {
-            let ownershipInfo = mappings[typeName]!
-            let owners = (ownershipInfo.main + ownershipInfo.fromExtension)
-                .distinct()
-                .map { "\"\($0)\"" }
-                .joined(separator: ", ")
+        
+        if !ownership.extensibleTypes.isEmpty {
+            content += """
             
-            content += "        \"\(typeName)\": [\(owners)],\n"
+            internal class _CodeOwners : CodeOwnersMappingProvider {
+                static let codeOwners: [Substring: CodeOwners]? = [
+            
+            """
+            generateMappingContent(ownership.extensibleTypes, ownership.extensionTypes, &content)
+            if (!hybridAttribution) {
+                generateMappingContent(ownership.finalTypes, ownership.extensionTypes, &content)
+            }
+            content += """
+                ]
+            }
+            
+            """
         }
-        content += """
-        ]
+        if (hybridAttribution) {
+            generateStaticContent(ownership.finalTypes, ownership.extensionTypes, &content)
+        }
+        
+        return content
     }
     
-    """
-        return content
+    private func generateMappingContent(_ types: [Substring: [String]], _ extensionTypes: [Substring: [String]], _ into: inout String) {
+        for typeName in types.keys.sorted() {
+            let owners = ownersLiteral(
+                main: types[typeName],
+                fromExtension: extensionTypes[typeName]
+            )
+            
+            into += "        \"\(typeName)\": [\(owners)],\n"
+        }
+    }
+    
+    private func generateStaticContent(_ types: [Substring: [String]], _ extensionTypes: [Substring: [String]], _ into: inout String) {
+        for typeName in types.keys.sorted() {
+            let owners = ownersLiteral(
+                main: types[typeName],
+                fromExtension: extensionTypes[typeName]
+            )
+            
+            into += """
+            
+            extension \(typeName) : HasCodeOwners {
+                 public static let codeOwners: CodeOwners = [\(owners)]
+            }
+            
+            """
+        }
     }
 }
 
@@ -169,4 +206,24 @@ private extension Sequence where Iterator.Element: Hashable {
     var seen: Set<Iterator.Element> = []
     return filter { seen.insert($0).inserted }
   }
+}
+
+private func ownersLiteral(main: [String]?, fromExtension: [String]?) -> String {
+    ((main ?? []) + (fromExtension ?? []))
+        .distinct()
+        .map { "\"\($0)\"" }
+        .joined(separator: ", ")
+}
+
+private struct FileResult : Sendable {
+    let finalTypes: Set<Substring>
+    let extensibleTypes: Set<Substring>
+    let extensionTypes: Set<Substring>
+    let owners: [String]
+}
+
+private struct Ownership {
+    var finalTypes: [Substring: [String]] = [:]
+    var extensibleTypes: [Substring: [String]] = [:]
+    var extensionTypes: [Substring: [String]] = [:]
 }

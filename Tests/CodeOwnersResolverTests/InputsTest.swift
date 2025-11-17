@@ -9,6 +9,7 @@ struct InputsTest {
         ("{}", SettingsFile(
             codeowners: nil,
             renames: nil,
+            hybridAttribution: nil,
             verbose: nil,
             quiet: nil
         )),
@@ -21,6 +22,7 @@ struct InputsTest {
             "renames": {
                 "foo": "bar",
             },
+            "hybridAttribution": false,
             "quiet": true,
             "verbose": true
         }
@@ -30,6 +32,7 @@ struct InputsTest {
                 file: "aFile"
             ),
             renames: [ "foo" : "bar" ],
+            hybridAttribution: false,
             verbose: true,
             quiet: true
         )),

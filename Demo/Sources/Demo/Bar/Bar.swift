@@ -3,7 +3,7 @@ import CodeOwnersAPI
 
 let BAR_FILE_OWNERS = #codeOwners
 
-struct Bar {
+class Bar {
 
     func doSomething() {
         print("Doing something with Bar")
