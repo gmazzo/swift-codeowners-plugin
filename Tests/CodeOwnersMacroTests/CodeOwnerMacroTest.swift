@@ -1,5 +1,5 @@
 import Testing
-import Foundation
+import PathKit
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacrosGenericTestSupport
 import CodeOwnersResolver
@@ -15,7 +15,7 @@ struct CodeOwnersMacrosTest {
                     /foo/   @foo-devs
                     /bar/   @bar-devs
                     """,
-                root: URL(filePath: "."),
+                root: ".",
                 renames: []
             )
         }()

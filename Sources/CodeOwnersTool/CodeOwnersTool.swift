@@ -1,8 +1,9 @@
-import Foundation
+import PathKit
 import ArgumentParser
 import CodeOwners
 import CodeOwnersResolver
 import SwiftParser
+import PathKit
 
 private let defaults = try! Inputs.lookupAlways().resolve()
 
@@ -15,16 +16,16 @@ struct CodeOwnersTool: AsyncParsableCommand {
     )
     
     @Argument(help: "The Swift source files to process")
-    var sources: [URL]
+    var sources: [Path]
     
     @Option(name: [.long, .customShort("r")], help: "The root directory where the CODEOWNERS file patterns are based from.")
-    var codeOwnersRoot: URL = defaults.codeOwnersRoot
+    var codeOwnersRoot: Path = Path(defaults.codeOwnersRoot)
     
     @Option(name: .shortAndLong, help: "The CODEOWNERS file to use for determining ownership.")
-    var codeOwnersFile: URL = defaults.codeOwnersFile
+    var codeOwnersFile: Path = Path(defaults.codeOwnersFile)
     
     @Option(name: .shortAndLong, help: "The path to store the generated output CodeOwners attribution file")
-    var outputFile: URL = FileManager.default.currentDirectory.appendingPathComponent("GeneratedSources/CodeOwners.swift")
+    var outputFile: Path = Path.current + "GeneratedSources/CodeOwners.swift"
     
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
     var renames: [RenameRule] = defaults.renames
@@ -45,9 +46,8 @@ struct CodeOwnersTool: AsyncParsableCommand {
             return
         }
         
-        let fm = FileManager.default
-        if (!fm.fileExists(atPath: codeOwnersFile.path)) {
-            print("CODEOWNERS file not found at path: \(codeOwnersFile.path).", to: &stdErr)
+        if (!codeOwnersFile.isFile) {
+            print("CODEOWNERS file not found: \(codeOwnersFile).", to: &stdErr)
             return
         }
         
@@ -59,9 +59,9 @@ struct CodeOwnersTool: AsyncParsableCommand {
         
         var mappings: [Substring: [String]] = [:]
         
-        try fm.walkFiles(at: sources) { sourceFile in
-            if sourceFile.pathExtension != "swift" { return }
-            if verbose { print("Processing source file: \(sourceFile.relativePath)") }
+        for sourceFile in try sources.flatMap({ $0.isDirectory ? try $0.recursiveChildren() : [$0] }) {
+            if sourceFile.extension != "swift" { return }
+            if verbose { print("Processing source file: \(sourceFile)") }
             
             guard let owners = resolver.codeOwnersOf(sourceFile) else { return }
             
@@ -71,21 +71,21 @@ struct CodeOwnersTool: AsyncParsableCommand {
                 }
 
             } catch {
-                print("warning: Failed to process source file '\(sourceFile.relativePath)': \(error)", to: &stdErr)
+                print("warning: Failed to process source file '\(sourceFile)': \(error)", to: &stdErr)
             }
         }
         
         let content = generateContent(mappings)
-        try fm.createDirectory(at: outputFile.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try content.write(to: outputFile, atomically: true, encoding: .utf8)
+        try outputFile.parent().mkpath()
+        try outputFile.write(content)
         
         if (!quiet) {
-            print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile.path)")
+            print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile)")
         }
     }
 
-    private func collectTypes(from source: URL) throws -> Set<Substring> {
-        let swiftFileContent = try String(contentsOf: source, encoding: .utf8)
+    private func collectTypes(from source: Path) throws -> Set<Substring> {
+        let swiftFileContent = try source.read(.utf8)
         let swiftFile = Parser.parse(source: swiftFileContent)
         let collector = TypesCollector(viewMode: .fixedUp)
         collector.walk(swiftFile)

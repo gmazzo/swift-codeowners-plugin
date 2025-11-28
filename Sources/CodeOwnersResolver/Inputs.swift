@@ -1,5 +1,9 @@
 import Foundation
 
+// Due SPM Plugin limitations, plugins cannot share code by having a `library` dependency nor 3rd party ones.
+// Therefore, this file is added to `CodeOwnersPlugin` and `CodeOwnersMacroPlugin` as a symbolic link, but it can't be
+// migrated to `PathKit` since we can't import the dependency for plugins.
+
 public struct Inputs : Sendable {
     public let codeOwnersRoot: URL
     public let codeOwnersFile: URL?

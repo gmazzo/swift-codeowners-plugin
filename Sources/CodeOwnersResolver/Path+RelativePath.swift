@@ -1,12 +1,12 @@
-import Foundation
+import PathKit
 
-public extension URL {
+public extension Path {
 
     // from https://stackoverflow.com/a/48360631/1007772
-    func relativePathTo(_ base: URL) -> String? {
+    func relativePathTo(_ base: Path) -> String? {
         // Remove/replace "." and "..", make paths absolute:
-        let destComponents = self.standardized.pathComponents
-        let baseComponents = base.standardized.pathComponents
+        let destComponents = self.url.standardized.pathComponents
+        let baseComponents = base.url.standardized.pathComponents
         
         // Find number of common path components:
         var i = 0

@@ -3,6 +3,11 @@ import CodeOwnersAPI
 @testable import Demo
 
 @Test
+func testOwnersOfFooFieldFromMacro() {
+    #expect(["foo-devs"] == FOO_FILE_OWNERS)
+}
+
+@Test
 func ownersOfFoo() {
     #expect(["foo-devs"] == codeOwnersOf(Foo.self))
     #expect(["foo-devs"] == codeOwnersOf(Foo()))

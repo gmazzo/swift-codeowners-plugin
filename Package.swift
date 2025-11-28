@@ -18,6 +18,7 @@ let package = Package(
         .library(name: "CodeOwnersMacro", targets: ["CodeOwnersMacro"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/kylef/PathKit", from: "1.0.1"),
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "602.0.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.6.2"),
         .package(url: "https://github.com/mtj0928/swift-codeowners", from: "0.1.1"),
@@ -26,7 +27,6 @@ let package = Package(
         .plugin(name: "CodeOwnersPlugin", capability: .buildTool(), dependencies: ["CodeOwnersTool"]),
         .executableTarget(name: "CodeOwnersTool", dependencies: [
             "CodeOwnersResolver",
-            .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftParser", package: "swift-syntax"),
         ]),
         .plugin(name: "CodeOwnersMacroPlugin", capability: .buildTool(), dependencies: ["CodeOwnersMacroTool"]),
@@ -40,6 +40,7 @@ let package = Package(
             .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
         ]),
         .target(name: "CodeOwnersResolver", dependencies: [
+            .product(name: "PathKit", package: "PathKit"),
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
             .product(name: "CodeOwners", package: "swift-codeowners")
         ]),

@@ -1,5 +1,5 @@
 import Testing
-import Foundation
+import PathKit
 @testable import CodeOwnersTool
 
 private let Default = "<#default#>"
@@ -18,21 +18,21 @@ private let Default = "<#default#>"
         Params(args: ["--rename=o-dev="], ownersBar: nil, ownersFoo: "fos"),
     ])
     func commandProducesExpectedOutput(params: Params) async throws {
-        let tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("CodeOwnersToolTests_\(params.hashValue)")
+        let tempDirectory = Path.temporary + "CodeOwnersToolTests_\(params.hashValue)"
 
         try prepareScenario(tempDirectory)
-        defer { try? FileManager.default.deleteRecursively(at: tempDirectory) }
-        let expectedOutput = tempDirectory.appendingPathComponent("GeneratedSources/_CodeOwners.swift")
+        defer { try? tempDirectory.delete() }
+        let expectedOutput = tempDirectory + "GeneratedSources/_CodeOwners.swift"
 
         let tool = try CodeOwnersTool.parse([
-            tempDirectory.appendingPathComponent("Sources").path, "-v",
-            "-r", tempDirectory.path,
-            "-c", tempDirectory.appendingPathComponent("CODEOWNERS").path,
-            "-o", expectedOutput.path
+            (tempDirectory + "Sources").string, "-v",
+            "-r", tempDirectory.string,
+            "-c", (tempDirectory + "CODEOWNERS").string,
+            "-o", expectedOutput.string
         ] + params.args)
         try tool.run()
 
-        let content = try String(contentsOf: expectedOutput, encoding: .utf8)
+        let content = try expectedOutput.read(.utf8)
         #expect(content ==
            """
            import CodeOwnersAPI
@@ -48,18 +48,19 @@ private let Default = "<#default#>"
            """)
     }
 
-    private func prepareScenario(_ tempDirectory: URL) throws {
-        let sources = tempDirectory.appendingPathComponent("Sources")
+    private func prepareScenario(_ tempDirectory: Path) throws {
+        let sources = tempDirectory + "Sources"
 
-        try FileManager.default.createDirectory(at: sources, withIntermediateDirectories: true)
-        try "struct Foo {}".write(to: sources.appendingPathComponent("Foo.swift"), atomically: true, encoding: .utf8)
-        try "class Bar {}".write(to: sources.appendingPathComponent("Bar.swift"), atomically: true, encoding: .utf8)
-        try "func topLevelFunc {}".write(to: sources.appendingPathComponent("TopLevelFunc.swift"), atomically: true, encoding: .utf8)
-        try """
+        try sources.mkpath()
+        try (sources + "Foo.swift").write("struct Foo {}")
+        try (sources + "Bar.swift").write("class Bar {}")
+        try (sources + "TopLevelFunc.swift").write("func topLevelFunc {}")
+        try (tempDirectory + "CODEOWNERS").write("""
             Foo*                @foo-devs
             Bar*                @bar-devs
             TopLevelFunc.swift  @toplevel-dev
-            """.write(to: tempDirectory.appendingPathComponent("CODEOWNERS"), atomically: true, encoding: .utf8)
+            """
+        )
     }
 
 }
