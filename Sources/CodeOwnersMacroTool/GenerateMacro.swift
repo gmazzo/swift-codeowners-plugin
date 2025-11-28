@@ -12,7 +12,7 @@ func generateMacro(
         .joined(separator: ", ")
     
     let content = """
-    import Foundation
+    import PathKit
     import CodeOwnersResolver
     import CodeOwnersMacro
     
@@ -23,7 +23,7 @@ func generateMacro(
                 #\"""
                 \(codeOwnersContent.replacingOccurrences(of: "\n", with: "\n            "))
                 \"""#,
-                root: URL(filePath: #"\(codeOwnersRoot.relativePath)"#),
+                root: #"\(codeOwnersRoot.relativePath)"#,
                 renames: [ \(renamesContent) 
                 ]
             )

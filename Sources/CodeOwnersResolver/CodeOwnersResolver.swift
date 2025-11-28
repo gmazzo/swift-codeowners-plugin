@@ -1,23 +1,22 @@
-import Foundation
+import PathKit
 import CodeOwners
 
 public struct CodeOwnersResolver {
-    fileprivate let root: URL
+    fileprivate let root: Path
     fileprivate let entries: CodeOwners
     
-    public func codeOwnersOf(_ file: URL) -> [String]? {
+    public func codeOwnersOf(_ file: Path) -> [String]? {
         guard let relativePath = file.relativePathTo(root) else { return nil }
         guard let owners = entries.codeOwner(pattern: relativePath)?.owners else { return nil }
         return owners.map(asLiteral)
     }
 }
 
-public func resolveCodeOwners(file: URL, root: URL, renames: [RenameRule] = []) throws -> CodeOwnersResolver {
-    let content = try String(contentsOf: file, encoding: .utf8)
-    return try resolveCodeOwners(fileContent: content, root: root, renames: renames)
+public func resolveCodeOwners(file: Path, root: Path, renames: [RenameRule] = []) throws -> CodeOwnersResolver {
+    return try resolveCodeOwners(fileContent: file.read(.utf8), root: root, renames: renames)
 }
 
-public func resolveCodeOwners(fileContent: String, root: URL, renames: [RenameRule] = []) throws -> CodeOwnersResolver {
+public func resolveCodeOwners(fileContent: String, root: Path, renames: [RenameRule] = []) throws -> CodeOwnersResolver {
     let parsed = CodeOwners.parse(file: fileContent)
     if renames.isEmpty { return CodeOwnersResolver(root: root, entries: parsed) }
     

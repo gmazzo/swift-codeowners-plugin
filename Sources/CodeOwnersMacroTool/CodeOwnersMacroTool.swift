@@ -1,4 +1,4 @@
-import Foundation
+import PathKit
 import ArgumentParser
 import CodeOwners
 import CodeOwnersResolver
@@ -14,23 +14,23 @@ struct CodeOwnersMacroTool: AsyncParsableCommand {
     )
     
     @Option(name: [.long, .customShort("r")], help: "The root directory where the CODEOWNERS file patterns are based from.")
-    var codeOwnersRoot: URL = defaults.codeOwnersRoot
+    var codeOwnersRoot: Path = Path(defaults.codeOwnersRoot)
     
     @Option(name: .shortAndLong, help: "The CODEOWNERS file to use for determining ownership.")
-    var codeOwnersFile: URL = defaults.codeOwnersFile
+    var codeOwnersFile: Path = Path(defaults.codeOwnersFile)
     
     @Argument(help: "The path to store the generated macro file output")
-    var outputMacroFile: URL = FileManager.default.currentDirectory.appendingPathComponent("GeneratedSources/CodeOwnersMacro.swift")
+    var outputMacroFile: Path = Path.current + "GeneratedSources/CodeOwnersMacro.swift"
     
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
     var renames: [RenameRule] = defaults.renames
     
     func run() throws {
         try generateMacro(
-            codeOwnersRoot: codeOwnersRoot,
-            codeOwnersFile: codeOwnersFile,
+            codeOwnersRoot: codeOwnersRoot.url,
+            codeOwnersFile: codeOwnersFile.url,
             renames: renames.asDict(),
-            outputMacroFile: outputMacroFile
+            outputMacroFile: outputMacroFile.url
         )
     }
 }
