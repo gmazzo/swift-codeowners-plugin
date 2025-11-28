@@ -60,10 +60,11 @@ struct CodeOwnersTool: AsyncParsableCommand {
         var mappings: [Substring: [String]] = [:]
         
         for sourceFile in try sources.flatMap({ $0.isDirectory ? try $0.recursiveChildren() : [$0] }) {
-            if sourceFile.extension != "swift" { return }
+            if (!quiet && !sourceFile.exists) { stdErr.write("Skipping input source because does not exists: \(sourceFile)"); continue }
+            if sourceFile.extension != "swift" { continue }
             if verbose { print("Processing source file: \(sourceFile)") }
             
-            guard let owners = resolver.codeOwnersOf(sourceFile) else { return }
+            guard let owners = resolver.codeOwnersOf(sourceFile) else { continue }
             
             do {
                 for typeName in try collectTypes(from: sourceFile) {
