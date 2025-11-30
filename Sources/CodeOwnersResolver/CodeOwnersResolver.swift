@@ -1,7 +1,7 @@
 import PathKit
 import CodeOwners
 
-public struct CodeOwnersResolver {
+public struct CodeOwnersResolver : Sendable {
     fileprivate let root: Path
     fileprivate let entries: CodeOwners
     

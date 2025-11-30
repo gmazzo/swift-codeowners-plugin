@@ -1,9 +1,11 @@
-import PathKit
 import ArgumentParser
 import CodeOwners
 import CodeOwnersResolver
 import SwiftParser
 import PathKit
+
+private typealias FileResult = (rootTypes: Set<Substring>, extensionTypes: Set<Substring>, owners: [String])
+private typealias TypeOwnership = (main: [String], fromExtension: [String])
 
 private let defaults = try! Inputs.lookupAlways().resolve()
 
@@ -36,7 +38,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Suppress non-error output.")
     var quiet: Bool = defaults.quiet
     
-    func run() throws {
+    func run() async throws {
         if (quiet && verbose) {
             print("Cannot use --quiet and --verbose flags together.", to: &stdErr)
             return
@@ -57,25 +59,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             renames: renames
         )
         
-        var mappings: [Substring: [String]] = [:]
-        
-        for sourceFile in try sources.flatMap({ $0.isDirectory ? try $0.recursiveChildren() : [$0] }) {
-            if (!quiet && !sourceFile.exists) { stdErr.write("Skipping input source because does not exists: \(sourceFile)"); continue }
-            if sourceFile.extension != "swift" { continue }
-            if verbose { print("Processing source file: \(sourceFile)") }
-            
-            guard let owners = resolver.codeOwnersOf(sourceFile) else { continue }
-            
-            do {
-                for typeName in try collectTypes(from: sourceFile) {
-                    mappings[typeName] = (mappings[typeName] ?? []) + owners
-                }
-
-            } catch {
-                print("warning: Failed to process source file '\(sourceFile)': \(error)", to: &stdErr)
-            }
-        }
-        
+        let mappings = await processSources(resolver)
         let content = generateContent(mappings)
         try outputFile.parent().mkpath()
         try outputFile.write(content)
@@ -84,16 +68,69 @@ struct CodeOwnersTool: AsyncParsableCommand {
             print("Generated CodeOwners attribution for \(mappings.count) types at: \(outputFile)")
         }
     }
-
-    private func collectTypes(from source: Path) throws -> Set<Substring> {
-        let swiftFileContent = try source.read(.utf8)
-        let swiftFile = Parser.parse(source: swiftFileContent)
-        let collector = TypesCollector(viewMode: .fixedUp)
-        collector.walk(swiftFile)
-        return collector.rootTypes
+    
+    private func processSources(_ resolver: CodeOwnersResolver) async -> [Substring: TypeOwnership] {
+        await withTaskGroup(of: FileResult?.self) { group in
+            for source in sources {
+                if (source.isDirectory) {
+                    if let sourceFiles = try? source.recursiveChildren() {
+                        for sourceFile in sourceFiles {
+                            group.addTask { processFile(resolver, sourceFile) }
+                        }
+                    }
+                    
+                } else {
+                    group.addTask { processFile(resolver, source) }
+                }
+                
+            }
+            
+            var mappings: [Substring: TypeOwnership] = [:]
+            for await (rootTypes, extensionTypes, owners) in (group.compactMap { $0 }) {
+                for typeName in rootTypes {
+                    let current = mappings[typeName] ?? ([], [])
+                    
+                    mappings[typeName] = (current.main + owners, current.fromExtension)
+                }
+                for typeName in extensionTypes {
+                    let current = mappings[typeName] ?? ([], [])
+                    
+                    mappings[typeName] = (current.main, current.fromExtension + owners)
+                }
+            }
+            return mappings
+        }
     }
     
-    private func generateContent(_ mappings: [Substring: [String]]) -> String {
+    private func processFile(_ resolver: CodeOwnersResolver, _ sourceFile: Path) -> FileResult? {
+        if (!quiet && !sourceFile.exists) {
+            stdErr.write("Skipping input source because does not exists: \(sourceFile)")
+            return nil
+        }
+        
+        if sourceFile.extension != "swift" { return nil }
+        if verbose { print("Processing source file: \(sourceFile)") }
+        
+        guard let owners: [String] = resolver.codeOwnersOf(sourceFile) else { return nil }
+        guard let collector = collectTypes(from: sourceFile) else { return nil }
+        return (collector.rootTypes, collector.extensionTypes, owners)
+    }
+
+    private func collectTypes(from sourceFile: Path) -> TypesCollector? {
+        do {
+            let swiftFileContent = try sourceFile.read(.utf8)
+            let swiftFile = Parser.parse(source: swiftFileContent)
+            let collector = TypesCollector(viewMode: .fixedUp)
+            collector.walk(swiftFile)
+            return collector
+            
+        } catch {
+            print("warning: Failed to process source file '\(sourceFile)': \(error)", to: &stdErr)
+            return nil
+        }
+    }
+    
+    private func generateContent(_ mappings: [Substring: TypeOwnership]) -> String {
         if mappings.isEmpty { return "" }
         
         var content = """
@@ -104,7 +141,11 @@ struct CodeOwnersTool: AsyncParsableCommand {
         
         """
         for typeName in mappings.keys.sorted() {
-            let owners = mappings[typeName]!.distinct().map { "\"\($0)\"" }.joined(separator: ", ")
+            let ownershipInfo = mappings[typeName]!
+            let owners = (ownershipInfo.main + ownershipInfo.fromExtension)
+                .distinct()
+                .map { "\"\($0)\"" }
+                .joined(separator: ", ")
             
             content += "        \"\(typeName)\": [\(owners)],\n"
         }
