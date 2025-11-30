@@ -9,7 +9,7 @@ import CodeOwnersResolver
 struct CodeOwnersMacrosTest {
     
     class CodeOwnersMacroTestImpl : CodeOwnersMacroBase {
-        nonisolated(unsafe) static let resolver = {
+        static let resolver = {
             try! resolveCodeOwners(
                 fileContent: """
                     /foo/   @foo-devs

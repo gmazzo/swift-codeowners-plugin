@@ -30,7 +30,7 @@ private let Default = "<#default#>"
             "-c", (tempDirectory + "CODEOWNERS").string,
             "-o", expectedOutput.string
         ] + params.args)
-        try tool.run()
+        try await tool.run()
 
         let content = try expectedOutput.read(.utf8)
         #expect(content ==
