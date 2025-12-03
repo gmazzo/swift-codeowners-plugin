@@ -10,7 +10,7 @@ let package = Package(
         .iOS(.v13),
     ],
     dependencies: [
-        .package(path: "../"),
+        .package(name: "swift-codeowners-plugin", path: "../"),
     ],
     targets: [
         .target(

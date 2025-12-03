@@ -1,7 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: "swift"
-    directory: "/"
+    directories:
+      - "/"
+      - "/Demo/"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"
