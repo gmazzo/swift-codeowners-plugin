@@ -1,5 +1,5 @@
 {
-  "originHash" : "8411bde3b366212a45da1cc216bd3623f55316a291628a3a8c5919578bce3be3",
+  "originHash" : "ade86ea309700aaf300297f847d838e7b8847ccab75820e737d27f29b0c80412",
   "pins" : [
     {
       "identity" : "pathkit",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mtj0928/swift-codeowners",
       "state" : {
-        "revision" : "649b0c58468f8cfeb70949cbc9f5e235dbe8d46e",
-        "version" : "0.1.1"
+        "revision" : "08112026f553d266c262dfa962cb2ff50a3f0bec",
+        "version" : "0.1.2"
       }
     },
     {
