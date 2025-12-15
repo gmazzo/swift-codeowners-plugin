@@ -17,7 +17,7 @@ runs:
       with:
         swift-version: ${{ inputs.swift-version }}
     - name: Swift Package Manager Cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: '**/.build/'
         key: ${{ runner.os }}-swift-${{ inputs.swift-version }}-${{ inputs.cache-suffix }}-spm-${{ hashFiles('**/Package.resolved') }}
