@@ -17,7 +17,7 @@ func generateMacro(
     import CodeOwnersMacro
     
     class CodeOwnersMacro : CodeOwnersMacroBase {
-        nonisolated(unsafe) static let resolver = {
+        static let resolver = {
             try! resolveCodeOwners(
                 fileContent:
                 #\"""
