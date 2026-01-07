@@ -40,9 +40,8 @@ Then you can use the `codeOwnersOf` function on any `struct`, `class` or `enum` 
 ```swift
 struct MyType {
     func printOwner() {
-        print("This type is owned by \(codeOwnersOf(self))") // or
-        print("This type is owned by \(codeOwnersOf(MyType.self))") // or
-        print("This type is owned by \(codeOwnersOf(MyType()))") // or
+        print("This type is owned by \(codeOwnersOf(Self.self))") // or
+        print("This type is owned by \(codeOwnersOf(MyType.self))")
     }
 }
 ```

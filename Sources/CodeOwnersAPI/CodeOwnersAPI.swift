@@ -8,13 +8,12 @@ public protocol CodeOwnersMappingProvider  {
     static var codeOwners: [Substring: CodeOwners]? { get }
 }
 
-public func codeOwnersOf(_ of: Any?) -> CodeOwners? {
+public func codeOwnersOf(_ of: Any.Type?) -> CodeOwners? {
     guard let of else { return nil }
-    let type = of as? AnyClass ?? type(of: of)
     // this is a critical assumption (hack) that works under the assumption that the the outcome of
     // String(reflecting: type) will be in the format of `ModuleName.TypeName`
     // if this changes in future Swift versions, this code and the whole solution will break
-    let className = "\(String(reflecting: type))"
+    let className = "\(String(reflecting: of))"
     return codeOwnersOf(nsClassName: className)
 }
 
