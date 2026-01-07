@@ -9,6 +9,7 @@ on:
       - main
 
 permissions:
+  id-token: write
   checks: write
   pull-requests: write
 
@@ -39,7 +40,12 @@ jobs:
           cache-suffix: ${{ matrix.name }}
       - name: Test & Build
         working-directory: ${{ matrix.projectDir }}
-        run: swift test --xunit-output .build/test-results.xml --enable-code-coverage
+        run:
+          swift test
+            --force-resolved-versions
+            --replace-scm-with-registry
+            --xunit-output .build/test-results.xml
+            --enable-code-coverage
       - name: Publish Test Report
         if: ${{ !cancelled() }}
         uses: gmazzo/publish-report-annotations@v1

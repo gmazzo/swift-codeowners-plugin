@@ -16,7 +16,16 @@ runs:
       uses: SwiftyLab/setup-swift@v1
       with:
         swift-version: ${{ inputs.swift-version }}
+    - name: Swift Twist
+      if: ${{ runner.os == 'macos' }}
+      shell: bash
+      run: |
+        brew install tuist
+        tuist auth login
+        tuist install --force-resolved-versions --replace-scm-with-registry
+        tuist setup cache
     - name: Swift Package Manager Cache
+      if: ${{ runner.os != 'macos' }}
       uses: actions/cache@v5
       with:
         path: '**/.build/'
