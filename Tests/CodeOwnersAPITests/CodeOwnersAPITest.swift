@@ -7,24 +7,17 @@ struct CodeOwnersAPITest {
     
     struct Params : Sendable {
         let expected: CodeOwners?
-        let input: Sendable?
+        let input: Any.Type?
     }
     
     @Test(.serialized, arguments: [
         Params(expected: nil, input: nil),
         Params(expected: nil, input: URL.self),
-        Params(expected: nil, input: URL(string: "https://google.com")),
         Params(expected: [ "foo" ], input: TestStruct.self),
-        Params(expected: [ "foo" ], input: TestStruct()),
         Params(expected: [ "foo" ], input: TestStruct.Inner.self),
-        Params(expected: [ "foo" ], input: TestStruct.Inner()),
         Params(expected: [ "foo", "bar" ], input: TestEnum.self),
-        Params(expected: [ "foo", "bar" ], input: TestEnum.AAA),
-        Params(expected: [ "foo", "bar" ], input: TestEnum.BBB),
         Params(expected: [ "baz" ], input: TestClass.self),
-        Params(expected: [ "baz" ], input: TestClass()),
         Params(expected: [ "baz" ], input: TestClass.Inner.self),
-        Params(expected: [ "baz" ], input: TestClass.Inner()),
     ])
     func codeOwnersOfResolution(params: Params) {
         let owners = codeOwnersOf(params.input)
