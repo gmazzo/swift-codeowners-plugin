@@ -7,7 +7,7 @@ let package = Package(
     name: "Demo Project",
     platforms: [
         .macOS(.v13),
-        .iOS(.v13),
+        .iOS(.v16),
     ],
     dependencies: [
         .package(name: "swift-codeowners-plugin", path: "../"),
