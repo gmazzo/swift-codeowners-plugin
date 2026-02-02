@@ -7,7 +7,7 @@ let package = Package(
     name: "swift-codeowners-plugin",
     platforms: [
         .macOS(.v13),
-        .iOS(.v13),
+        .iOS(.v16),
     ],
     products: [
         .plugin(name: "CodeOwnersPlugin", targets: ["CodeOwnersPlugin"]),
