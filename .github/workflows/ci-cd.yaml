@@ -58,7 +58,7 @@ jobs:
             -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info
       - name: Coverage report
         if: ${{ runner.os == 'linux' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
