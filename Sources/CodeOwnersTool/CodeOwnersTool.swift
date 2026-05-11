@@ -144,6 +144,7 @@ struct CodeOwnersTool: AsyncParsableCommand {
             let ownershipInfo = mappings[typeName]!
             let owners = (ownershipInfo.main + ownershipInfo.fromExtension)
                 .distinct()
+                .sorted()
                 .map { "\"\($0)\"" }
                 .joined(separator: ", ")
             
