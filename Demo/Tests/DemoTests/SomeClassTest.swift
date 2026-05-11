@@ -4,6 +4,6 @@ import CodeOwnersAPI
 
 @Test
 func ownersOfSomeClass() {
-    #expect(["baz-devs", "demo-devs"] == codeOwnersOf(SomeClassImpl.self))
-    #expect(["baz-devs", "demo-devs"] == codeOwnersOf(SomeClassImpl()))
+    #expect(["demo-devs", "baz-devs", "bar-devs"] == codeOwnersOf(SomeClassImpl.self))
+    #expect(["demo-devs", "baz-devs", "bar-devs"] == codeOwnersOf(SomeClassImpl()))
 }

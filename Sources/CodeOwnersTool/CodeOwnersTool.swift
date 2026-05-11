@@ -4,7 +4,7 @@ import CodeOwnersResolver
 import SwiftParser
 import PathKit
 
-private typealias FileResult = (rootTypes: Set<Substring>, extensionTypes: Set<Substring>, owners: [String])
+private typealias FileResult = (file: Path, rootTypes: Set<Substring>, extensionTypes: Set<Substring>, owners: [String])
 private typealias TypeOwnership = (main: [String], fromExtension: [String])
 
 private let defaults = try! Inputs.lookupAlways().resolve()
@@ -78,42 +78,47 @@ struct CodeOwnersTool: AsyncParsableCommand {
                             group.addTask { processFile(resolver, sourceFile) }
                         }
                     }
-                    
+
                 } else {
                     group.addTask { processFile(resolver, source) }
                 }
-                
+
             }
-            
+
+            let results = await group
+                .compactMap { $0 }
+                .reduce(into: [FileResult]()) { $0.append($1) }
+                .sorted(by: { $0.file < $1.file })
+
             var mappings: [Substring: TypeOwnership] = [:]
-            for await (rootTypes, extensionTypes, owners) in (group.compactMap { $0 }) {
-                for typeName in rootTypes {
+            for (_, rootTypes, extensionTypes, owners) in results {
+                for typeName in rootTypes.sorted() {
                     let current = mappings[typeName] ?? ([], [])
-                    
+
                     mappings[typeName] = (current.main + owners, current.fromExtension)
                 }
-                for typeName in extensionTypes {
+                for typeName in extensionTypes.sorted() {
                     let current = mappings[typeName] ?? ([], [])
-                    
+
                     mappings[typeName] = (current.main, current.fromExtension + owners)
                 }
             }
             return mappings
         }
     }
-    
+
     private func processFile(_ resolver: CodeOwnersResolver, _ sourceFile: Path) -> FileResult? {
         if (!quiet && !sourceFile.exists) {
             stdErr.write("Skipping input source because does not exists: \(sourceFile)")
             return nil
         }
-        
+
         if sourceFile.extension != "swift" { return nil }
         if verbose { print("Processing source file: \(sourceFile)") }
-        
+
         guard let owners: [String] = resolver.codeOwnersOf(sourceFile) else { return nil }
         guard let collector = collectTypes(from: sourceFile) else { return nil }
-        return (collector.rootTypes, collector.extensionTypes, owners)
+        return (sourceFile, collector.rootTypes, collector.extensionTypes, owners)
     }
 
     private func collectTypes(from sourceFile: Path) -> TypesCollector? {
@@ -144,7 +149,6 @@ struct CodeOwnersTool: AsyncParsableCommand {
             let ownershipInfo = mappings[typeName]!
             let owners = (ownershipInfo.main + ownershipInfo.fromExtension)
                 .distinct()
-                .sorted()
                 .map { "\"\($0)\"" }
                 .joined(separator: ", ")
             
