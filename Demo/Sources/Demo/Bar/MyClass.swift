@@ -3,3 +3,7 @@ class MyClass {
         return "Hello from MyClass in Bar!"
     }
 }
+
+extension SomeClassImpl {
+    
+}
