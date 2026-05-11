@@ -40,7 +40,7 @@ private let Default = "<#default#>"
            internal class _CodeOwners : CodeOwnersMappingProvider {
                static let codeOwners: [Substring: CodeOwners]? = [
                    "Bar": ["\(params.ownersBar ?? "bar-devs")"],
-                   "Foo": ["\(params.ownersFoo ?? "foo-devs")"],
+                   "Foo": ["\(params.ownersFoo ?? "foo-devs")", "baz-owners"],
                    "topLevelFunc": ["toplevel-dev"],
                ]
            }
@@ -53,11 +53,13 @@ private let Default = "<#default#>"
 
         try sources.mkpath()
         try (sources + "Foo.swift").write("struct Foo {}")
+        try (sources + "Baz.swift").write("extension Foo {}")
         try (sources + "Bar.swift").write("class Bar {}")
         try (sources + "TopLevelFunc.swift").write("func topLevelFunc {}")
         try (tempDirectory + "CODEOWNERS").write("""
             Foo*                @foo-devs
             Bar*                @bar-devs
+            Baz*                @baz-owners
             TopLevelFunc.swift  @toplevel-dev
             """
         )
