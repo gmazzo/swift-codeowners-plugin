@@ -24,13 +24,12 @@ private let Default = "<#default#>"
         defer { try? tempDirectory.delete() }
         let expectedOutput = tempDirectory + "GeneratedSources/_CodeOwners.swift"
 
-        let tool = try CodeOwnersTool.parse([
+        try await CodeOwnersTool.parse([
             (tempDirectory + "Sources").string, "-v",
             "-r", tempDirectory.string,
             "-c", (tempDirectory + "CODEOWNERS").string,
             "-o", expectedOutput.string
-        ] + params.args)
-        try await tool.run()
+        ] + params.args).run()
 
         let content = try expectedOutput.read(.utf8)
         #expect(content ==
