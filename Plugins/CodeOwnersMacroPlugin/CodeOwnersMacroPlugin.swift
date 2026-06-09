@@ -6,7 +6,7 @@ struct CodeOwnersPlugin: BuildToolPlugin {
 
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
         guard let inputs = Inputs.lookup(atRoot: context.package.directoryURL) else {
-            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(target.name)")
+            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(target.name): \(context.package.directoryURL)")
             return []
         }
         
