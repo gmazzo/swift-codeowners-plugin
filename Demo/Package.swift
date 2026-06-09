@@ -16,13 +16,14 @@ let package = Package(
         .target(
             name: "Demo",
             dependencies: [
-                "Macros",
+                "MacrosAPI",
                 .product(name: "CodeOwnersAPI", package: "swift-codeowners-plugin")
             ],
             plugins: [
                 .plugin(name: "CodeOwnersPlugin", package: "swift-codeowners-plugin")
             ]
         ),
+        .target(name: "MacrosAPI", dependencies: ["Macros"]),
         .macro(
             name: "Macros",
             dependencies: [
