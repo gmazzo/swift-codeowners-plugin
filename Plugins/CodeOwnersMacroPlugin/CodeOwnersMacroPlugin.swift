@@ -2,18 +2,26 @@ import PackagePlugin
 import Foundation
 
 @main
-struct CodeOwnersPlugin: BuildToolPlugin {
+struct CodeOwnersMacroPlugin: BuildToolPlugin {
 
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
-        guard let inputs = Inputs.lookup(atRoot: context.package.directoryURL) else {
-            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(target.name): \(context.package.directoryURL)")
+        return try buildCommands(
+            targetName: target.name,
+            root: context.package.directoryURL,
+            workingDir: context.pluginWorkDirectoryURL,
+            tool: try context.tool(named: "CodeOwnersMacroTool")
+        )
+    }
+
+    private func buildCommands(targetName: String, root: URL, workingDir: URL, tool: PackagePlugin.PluginContext.Tool) throws -> [Command] {
+        guard let inputs = Inputs.lookup(atRoot: root) else {
+            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(targetName): \(root)")
             return []
         }
-        
-        let tool = try context.tool(named: "CodeOwnersMacroTool")
+
         let resolved = try inputs.resolve()
-        let macroFile = context.pluginWorkDirectoryURL.appendingPathComponent("CodeOwnersMacro.swift")
-        
+        let macroFile = workingDir.appendingPathComponent("CodeOwnersMacro.swift")
+
         if ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode" {
             // FIXME Xcode early fails due missing output file, before running `.buildCommand`
             //  so we also run the macro generation here as a workaround.
@@ -39,3 +47,18 @@ struct CodeOwnersPlugin: BuildToolPlugin {
     }
 
 }
+
+#if canImport(XcodeProjectPlugin)
+import XcodeProjectPlugin
+
+extension CodeOwnersMacroPlugin: XcodeBuildToolPlugin {
+    func createBuildCommands(context: XcodePluginContext, target: XcodeTarget) throws -> [Command] {
+        return try buildCommands(
+            targetName: target.displayName,
+            root: context.xcodeProject.directoryURL,
+            workingDir: context.pluginWorkDirectoryURL,
+            tool: try context.tool(named: "CodeOwnersMacroTool")
+        )
+    }
+}
+#endif

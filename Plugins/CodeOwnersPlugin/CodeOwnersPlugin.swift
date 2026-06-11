@@ -10,19 +10,27 @@ struct CodeOwnersPlugin: BuildToolPlugin {
             return []
         }
         
-        guard let inputs = Inputs.lookup(atRoot: context.package.directoryURL) else {
-            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(target.name)")
+        return try buildCommands(
+            targetName: target.name,
+            root: context.package.directoryURL,
+            workingDir: context.pluginWorkDirectoryURL,
+            inputFiles: swiftTarget.sourceFiles(withSuffix: ".swift").map(\.url),
+            tool: try context.tool(named: "CodeOwnersTool")
+        )
+    }
+    
+    private func buildCommands(targetName: String, root: URL, workingDir: URL, inputFiles: [URL], tool: PackagePlugin.PluginContext.Tool) throws -> [Command] {
+        guard let inputs = Inputs.lookup(atRoot: root) else {
+            Diagnostics.error("Failed to infer CODEOWNERS file root for target \(targetName)")
             return []
         }
 
-        let inputFiles = swiftTarget.sourceFiles(withSuffix: ".swift").map(\.url)
         if (inputFiles.isEmpty) {
-            Diagnostics.warning("Target \(target.name) does not contain any Swift source files.")
+            Diagnostics.warning("Target \(targetName) does not contain any Swift source files.")
             return []
         }
-
-        let tool = try context.tool(named: "CodeOwnersTool")
-        let outputFile = context.pluginWorkDirectoryURL.appendingPathComponent("CodeOwners.swift")
+        
+        let outputFile = workingDir.appendingPathComponent("CodeOwners.swift")
 
         return [.buildCommand(
             displayName: "CodeOwner attribution",
@@ -34,3 +42,19 @@ struct CodeOwnersPlugin: BuildToolPlugin {
     }
 
 }
+
+#if canImport(XcodeProjectPlugin)
+import XcodeProjectPlugin
+
+extension CodeOwnersPlugin: XcodeBuildToolPlugin {
+    func createBuildCommands(context: XcodePluginContext, target: XcodeTarget) throws -> [Command] {
+        return try buildCommands(
+            targetName: target.displayName,
+            root: context.xcodeProject.directoryURL,
+            workingDir: context.pluginWorkDirectoryURL,
+            inputFiles: target.inputFiles.map(\.url).filter { $0.pathExtension.hasSuffix(".swift") },
+            tool: try context.tool(named: "CodeOwnersTool")
+        )
+    }
+}
+#endif
