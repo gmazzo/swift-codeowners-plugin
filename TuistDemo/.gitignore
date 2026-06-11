@@ -1,0 +1,5 @@
+build/
+Derived/
+*.xcodeproj/
+*.xcworkspace/
+.package.resolved
