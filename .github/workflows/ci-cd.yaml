@@ -9,6 +9,7 @@ on:
       - main
 
 permissions:
+  id-token: write
   checks: write
   pull-requests: write
 
@@ -39,6 +40,7 @@ jobs:
           cache-suffix: ${{ matrix.name }}
       - name: Test & Build
         working-directory: ${{ matrix.projectDir }}
+        shell: bash
         run: swift test --xunit-output .build/test-results.xml --enable-code-coverage
       - name: Publish Test Report
         if: ${{ !cancelled() }}
@@ -49,6 +51,7 @@ jobs:
       - name: Extract coverage data
         if: ${{ runner.os == 'linux' }}
         working-directory: ${{ matrix.projectDir }}
+        shell: bash
         run: |
           COVERAGE_FILE=$(swift test --show-codecov-path)
           BUILD_DIR="${COVERAGE_FILE%/*/*}"
@@ -62,14 +65,41 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  build-tuist:
+    name: Build (Tuist Demo)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Tuist
+        working-directory: TuistDemo
+        shell: bash
+        run: |
+          brew install tuist
+          tuist auth login
+          tuist setup cache
+      - name: Test & Build
+        working-directory: TuistDemo
+        shell: bash
+        run:
+          tuist test --no-selective-testing --result-bundle-path .build/tests.xcresult
+      - name: Publish Test Report
+        if: ${{ !cancelled() }}
+        uses: gmazzo/publish-report-annotations@v1
+        with:
+          checkName: Test Results (Tuist Demo)
+          reports: 'TuistDemo/.build/tests.xcresult'
+
   build-passed:
     name: Build passed
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - build
+      - build-tuist
     if: ${{ !cancelled() }}
     steps:
       - name: Check `Build` has passed
-        if: ${{ needs.build.result != 'success' }}
+        if: ${{ contains(needs.*.result, 'failure') }}
         run: |
           echo "Build was not successful!" 
           exit 1
