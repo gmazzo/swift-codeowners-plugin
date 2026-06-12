@@ -1,0 +1,7 @@
+{
+  "verbose": true,
+  "renames": {
+    "experts": "devs",
+    "foo\\w+/bar": "bar"
+  }
+}
