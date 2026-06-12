@@ -52,7 +52,7 @@ extension CodeOwnersPlugin: XcodeBuildToolPlugin {
             targetName: target.displayName,
             root: context.xcodeProject.directoryURL,
             workingDir: context.pluginWorkDirectoryURL,
-            inputFiles: target.inputFiles.map(\.url).filter { $0.pathExtension.hasSuffix(".swift") },
+            inputFiles: target.inputFiles.map(\.url).filter { $0.lastPathComponent.hasSuffix(".swift") },
             tool: try context.tool(named: "CodeOwnersTool")
         )
     }
