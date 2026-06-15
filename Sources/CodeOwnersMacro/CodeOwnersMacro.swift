@@ -11,7 +11,7 @@ public protocol CodeOwnersMacroBase: ExpressionMacro {
 extension CodeOwnersMacroBase {
     
     public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
+        of node: some SyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
         guard let location = context.location(of: node, at: .beforeLeadingTrivia, filePathMode: .filePath) else {
