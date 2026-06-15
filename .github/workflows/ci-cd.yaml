@@ -95,6 +95,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Setup Xcode
+        shell: bash
+        run: |
+          xcodes select
       - name: Setup Tuist
         shell: bash
         run: |
