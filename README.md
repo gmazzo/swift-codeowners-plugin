@@ -1,4 +1,6 @@
-![GitHub](https://img.shields.io/github/license/gmazzo/swift-codeowners-plugin)
+![License](https://img.shields.io/github/license/gmazzo/swift-codeowners-plugin)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fgmazzo%2Fswift-codeowners-plugin%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/gmazzo/swift-codeowners-plugin)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fgmazzo%2Fswift-codeowners-plugin%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/gmazzo/swift-codeowners-plugin)
 [![SPM](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fgmazzo%2Fswift-codeowners-plugin%2Freleases%2Flatest&query=tag_name&logo=https%3A%2F%2Fswiftpackageregistry.com%2Fandroid-icon-192x192.png&label=SPM&color=%23f05138)](https://swiftpackageregistry.com/gmazzo/swift-codeowners-plugin)
 [![Build Status](https://github.com/gmazzo/swift-codeowners-plugin/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/gmazzo/swift-codeowners-plugin/actions/workflows/ci-cd.yaml)
 [![Coverage](https://codecov.io/gh/gmazzo/swift-codeowners-plugin/branch/main/graph/badge.svg?token=ExYkP1Q9oE)](https://codecov.io/gh/gmazzo/swift-codeowners-plugin)
