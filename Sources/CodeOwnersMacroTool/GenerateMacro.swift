@@ -4,7 +4,8 @@ func generateMacro(
     codeOwnersRoot: URL,
     codeOwnersFile: URL,
     renames: [String: String],
-    outputMacroFile: URL
+    outputMacroFile: URL,
+    verbose: Bool
 ) throws {
     let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
     let renamesContent = renames
@@ -28,6 +29,8 @@ func generateMacro(
                 ]
             )
         }()
+        static let verbose = \(verbose)
+        nonisolated(unsafe) static var printRoot = \(verbose)
     }
     """
     

@@ -2,8 +2,8 @@ import PathKit
 import CodeOwners
 
 public struct CodeOwnersResolver : Sendable {
-    fileprivate let root: Path
-    fileprivate let entries: CodeOwners
+    public let root: Path
+    public let entries: CodeOwners
     
     public func codeOwnersOf(_ file: Path) -> [String]? {
         guard let relativePath = file.relativePathTo(root) else { return nil }

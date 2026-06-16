@@ -25,12 +25,16 @@ struct CodeOwnersMacroTool: AsyncParsableCommand {
     @Option(name: [.customLong("rename")], help: "Regex pattern to rename ownership names, in <regex>=<replacement> format)")
     var renames: [RenameRule] = defaults.renames
     
+    @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Enable verbose output for debugging purposes.")
+    var verbose: Bool = defaults.verbose
+
     func run() throws {
         try generateMacro(
             codeOwnersRoot: codeOwnersRoot.url,
             codeOwnersFile: codeOwnersFile.url,
             renames: renames.asDict(),
-            outputMacroFile: outputMacroFile.url
+            outputMacroFile: outputMacroFile.url,
+            verbose: verbose
         )
     }
 }

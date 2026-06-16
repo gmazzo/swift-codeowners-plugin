@@ -29,7 +29,8 @@ struct CodeOwnersMacroPlugin: BuildToolPlugin {
                 codeOwnersRoot: resolved.codeOwnersRoot,
                 codeOwnersFile: resolved.codeOwnersFile,
                 renames: resolved.renames.asDict(),
-                outputMacroFile: macroFile
+                outputMacroFile: macroFile,
+                verbose: resolved.verbose
             )
         }
 
@@ -40,7 +41,7 @@ struct CodeOwnersMacroPlugin: BuildToolPlugin {
                 "-r", resolved.codeOwnersRoot.path,
                 "-c", resolved.codeOwnersFile.path,
                 macroFile.path,
-            ],
+            ] + (resolved.verbose ? ["--verbose"] : []),
             inputFiles: inputs.files,
             outputFiles: [macroFile]
         )]
