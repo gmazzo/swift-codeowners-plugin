@@ -24,15 +24,12 @@ struct CodeOwnersMacrosTest {
     }
     
     @Test(arguments: [
-        (true, "foo/Foo.swift", ["foo-devs"]),
-        (false, "bar/Bar.swift", ["bar-devs"]),
-        (false, "another.swift", nil),
+        ("foo/Foo.swift", ["foo-devs"]),
+        ("bar/Bar.swift", ["bar-devs"]),
+        ("another.swift", nil),
     ])
-    func expansionYieldsOwners(params: (printRoot: Bool, file: String, expectedOwners: [String]?)) throws {
+    func expansionYieldsOwners(params: (file: String, expectedOwners: [String]?)) throws {
         let ownersLiteral = params.expectedOwners?.map { "\"\($0)\"" }.joined(separator: ", ")
-        let printRootDiags: [DiagnosticSpec] = params.printRoot ? [.init(message: "CodeOwners root: .", line: 1, column: 28, severity: .note) ] : []
-        
-        CodeOwnersMacroTestImpl.self.printRoot = params.printRoot
         
         assertMacroExpansion(
           """
@@ -41,7 +38,15 @@ struct CodeOwnersMacrosTest {
           expandedSource: """
             let CODEOWNERS: [String] = \(ownersLiteral.map { "[\($0)]" } ?? "nil")
             """,
-          diagnostics: printRootDiags + [ .init(message: "CodeOwners of \(params.file): \(params.expectedOwners ?? [])", line: 1, column: 28, severity: .note) ],
+          diagnostics: [ .init(
+            message: """
+                CodeOwners resolution: \(params.expectedOwners?.description ?? "<not matched>") (for: \(params.file))
+                  root: .
+                """,
+            line: 1,
+            column: 28,
+            severity: .note
+          ) ],
           macroSpecs: [ "codeOwners" : MacroSpec(type: CodeOwnersMacroTestImpl.self) ],
           testFileName: params.file
         ) {
@@ -56,8 +61,6 @@ struct CodeOwnersMacrosTest {
                     )
             )
         }
-        
-        #expect(CodeOwnersMacroTestImpl.self.printRoot == false)
     }
     
 }
