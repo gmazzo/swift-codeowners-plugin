@@ -14,7 +14,7 @@ import Testing
     (target: "/private/var/logs/x/y/z/log.txt", base: "/var/logs", expected: "../../private/var/logs/x/y/z/log.txt"),
     (target: "file:///private/tmp/foo/Foo.swift", base: "file:///private/tmp/", expected: "foo/Foo.swift")
 ])
-func URL_relativePathTo(target: Path, base: Path, expected: String) {
+func Path_relativePathTo(target: Path, base: Path, expected: String) {
     let actual = target.relativePathTo(base)
 
     #expect(expected == actual)

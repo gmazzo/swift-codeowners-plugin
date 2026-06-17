@@ -40,9 +40,6 @@ struct SettingsFile : Decodable, Equatable {
     struct CodeOwners : Decodable, Equatable {
         let root: String?
         let file: String?
-
-        var rootURL: URL? { return root.map { URL(filePath: $0) } }
-        var fileURL: URL? { return file.map { URL(filePath: $0) } }
     }
 }
 
@@ -85,11 +82,12 @@ public extension Inputs {
         
         let data = try Data(contentsOf: settingsFile)
         let settings = try JSONDecoder().decode(SettingsFile.self, from: data)
-        let root = settings.codeowners?.rootURL ?? codeOwnersRoot
+        let settingsDir = settingsFile.deletingLastPathComponent()
+        let root = settings.codeowners?.root.map(settingsDir.resolve) ?? codeOwnersRoot
         let renames = settings.renames?.map { (regex, replace) in RenameRule(regex: regex, replacement: replace) }
         return Resolved(
             codeOwnersRoot: root,
-            codeOwnersFile: settings.codeowners?.fileURL ?? codeOwnersFile ?? defaultCodeOwnersFile(atRoot: root),
+            codeOwnersFile: settings.codeowners?.file.map(settingsDir.resolve) ?? codeOwnersFile ?? defaultCodeOwnersFile(atRoot: root),
             renames: renames ?? [],
             verbose: settings.verbose ?? false,
             quiet: settings.quiet ?? false
@@ -102,6 +100,14 @@ extension [RenameRule] {
     
     public func asDict() -> [String: String] {
         return self.reduce(into: [:]) { $0[$1.regex] = $1.replacement }
+    }
+    
+}
+
+private extension URL {
+    
+    func resolve(_ path: String) -> URL {
+        self.appendingPathComponent(path).standardized
     }
     
 }
