@@ -30,7 +30,6 @@ func generateMacro(
             )
         }()
         static let verbose = \(verbose)
-        nonisolated(unsafe) static var printRoot = \(verbose)
     }
     """
     
