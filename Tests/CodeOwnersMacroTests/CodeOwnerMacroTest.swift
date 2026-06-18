@@ -20,7 +20,6 @@ struct CodeOwnersMacrosTest {
             )
         }()
         static let verbose = true
-        nonisolated(unsafe) static var printRoot = false
     }
     
     @Test(arguments: [
