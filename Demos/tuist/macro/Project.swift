@@ -44,7 +44,7 @@ let project = Project(
             deploymentTargets: .macOS("13.0"),
             buildableFolders: [.folder("Sources/MacrosImpl")],
             dependencies: [
-                .package(product: "CodeOwnersMacro"),
+                .package(product: "CodeOwnersMacroBase"),
                 .package(product: "CodeOwnersMacroPlugin", type: .plugin)
             ]
         ),

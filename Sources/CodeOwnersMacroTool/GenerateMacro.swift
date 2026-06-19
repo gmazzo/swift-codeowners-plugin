@@ -15,7 +15,7 @@ func generateMacro(
     let content = """
     import PathKit
     import CodeOwnersResolver
-    import CodeOwnersMacro
+    import CodeOwnersMacroBase
     
     class CodeOwnersMacro : CodeOwnersMacroBase {
         static let resolver = {

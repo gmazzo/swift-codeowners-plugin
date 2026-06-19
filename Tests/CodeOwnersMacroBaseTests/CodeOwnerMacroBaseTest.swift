@@ -3,7 +3,7 @@ import PathKit
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacrosGenericTestSupport
 import CodeOwnersResolver
-@testable import CodeOwnersMacro
+@testable import CodeOwnersMacroBase
 
 @Suite("#codeOwners macro test", .serialized)
 struct CodeOwnersMacrosTest {

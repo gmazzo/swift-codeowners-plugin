@@ -72,7 +72,7 @@ First, declare a new macro target in your `Package.swift` (if you don't have one
         .macro(
             name: "MyMacros",
             dependencies: [
-                .product(name: "CodeOwnersMacro", package: "swift-codeowners-plugin"),
+                .product(name: "CodeOwnersMacroBase", package: "swift-codeowners-plugin"),
             ],
             plugins: [
                 .plugin(name: "CodeOwnersMacroPlugin", package: "swift-codeowners-plugin")

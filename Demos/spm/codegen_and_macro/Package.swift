@@ -28,7 +28,7 @@ let package = Package(
         .macro(
             name: "MacrosImpl",
             dependencies: [
-                .product(name: "CodeOwnersMacro", package: "swift-codeowners-plugin"),
+                .product(name: "CodeOwnersMacroBase", package: "swift-codeowners-plugin"),
             ],
             plugins: [
                 .plugin(name: "CodeOwnersMacroPlugin", package: "swift-codeowners-plugin")
