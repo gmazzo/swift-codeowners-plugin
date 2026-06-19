@@ -15,7 +15,7 @@ let package = Package(
         .library(name: "CodeOwnersAPI", targets: ["CodeOwnersAPI"]),
         .plugin(name: "CodeOwnersMacroPlugin", targets: ["CodeOwnersMacroPlugin"]),
         .executable(name: "CodeOwnersMacroTool", targets: ["CodeOwnersMacroTool"]),
-        .library(name: "CodeOwnersMacro", targets: ["CodeOwnersMacro"]),
+        .library(name: "CodeOwnersMacroBase", targets: ["CodeOwnersMacroBase"]),
     ],
     dependencies: [
         .package(url: "https://github.com/kylef/PathKit", from: "1.0.1"),
@@ -34,7 +34,7 @@ let package = Package(
             "CodeOwnersResolver",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
         ]),
-        .target(name: "CodeOwnersMacro", dependencies: [
+        .target(name: "CodeOwnersMacroBase", dependencies: [
             "CodeOwnersResolver",
             .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
             .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
@@ -48,8 +48,8 @@ let package = Package(
         .testTarget(name: "CodeOwnersAPITests", dependencies: ["CodeOwnersAPI"]),
         .testTarget(name: "CodeOwnersToolTests", dependencies: ["CodeOwnersTool"]),
         .testTarget(name: "CodeOwnersResolverTests", dependencies: ["CodeOwnersResolver"]),
-        .testTarget(name: "CodeOwnersMacroTests", dependencies: [
-            "CodeOwnersMacro",
+        .testTarget(name: "CodeOwnersMacroBaseTests", dependencies: [
+            "CodeOwnersMacroBase",
             .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
         ]),
     ]
