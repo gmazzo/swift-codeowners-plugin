@@ -9,17 +9,16 @@ import CodeOwnersResolver
 struct CodeOwnersMacrosTest {
     
     class CodeOwnersMacroTestImpl : CodeOwnersMacroBase {
-        static let resolver = {
-            try! resolveCodeOwners(
-                fileContent: """
-                    /foo/   @foo-devs
-                    /bar/   @bar-devs
-                    """,
-                root: ".",
-                renames: []
-            )
-        }()
+        
+        static let fileContent = """
+            /foo/   @foo-devs
+            /bar/   @bar-devs
+            """
+        
+        static let relativePath = "."
+        
         static let verbose = true
+        
     }
     
     @Test(arguments: [

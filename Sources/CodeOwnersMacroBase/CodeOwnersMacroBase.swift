@@ -6,48 +6,89 @@ import SwiftDiagnostics
 import CodeOwnersResolver
 
 public protocol CodeOwnersMacroBase: ExpressionMacro {
-    static var resolver: CodeOwnersResolver { get }
+    static var fileContent: String { get }
+    static var relativePath: String { get }
+    static var renames: [RenameRule] { get }
     static var verbose: Bool { get }
 }
 
-extension CodeOwnersMacroBase {
+public extension CodeOwnersMacroBase {
     
+    static var renames: [RenameRule] { [] }
+    
+    static var verbose: Bool { false }
+    
+}
+
+nonisolated(unsafe) private var resolverCache: [String: CodeOwnersResolver] = [:]
+
+extension CodeOwnersMacroBase {
+
     public static func expansion(
         of node: some SyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-        guard let location = context.location(of: node, at: .beforeLeadingTrivia, filePathMode: .filePath) else {
-            throw CodeOwnersMacroError(message: "Can't find current file location")
-        }
-        let filePath = location.file.trimmedDescription
-        let file = try JSONDecoder().decode(String.self, from: filePath.data(using: .utf8)!)
-        let path = Path(file)
-        let owners = resolver.codeOwnersOf(path)
+        let resolver = try resolver()
+        let location = try resolveFilePath(of: node, in: context)
+        
+        let owners = resolver.codeOwnersOf(location)
         
         if (verbose) {
-            let relativePath = path.relativePathTo(resolver.root) ?? file
+            let relativePath = location.relativePathTo(resolver.root)
             
-            context.diagnose(Diagnostic(node: node, message: Message(
-                message: """
-                    CodeOwners resolution: \(owners?.description ?? "<not matched>") (for: \(relativePath))
-                      root: \(resolver.root)
-                    """,
-                diagnosticID: MessageID(domain: "CodeOwnersMacro", id: "ResolvedCodeOwners"),
-                severity: .note
+            context.diagnose(Diagnostic(node: node, message: CodeOwnersMacroError(
+                """
+                CodeOwners resolution: \(owners?.description ?? "<not matched>") (for: \(relativePath))
+                  root: \(resolver.root)
+                """,
+                "ResolvedCodeOwners",
+                .note
             )))
         }
         
         return ExprSyntax(literal: owners)
     }
     
+    private static func resolver() throws -> CodeOwnersResolver {
+        let cacheKey = "\(type(of: Self.self))"
+        if let resolver = resolverCache[cacheKey] { return resolver }
+        
+        let resolver = try resolveCodeOwners(
+            fileContent: self.fileContent,
+            root: Path(self.relativePath),
+            renames: self.renames
+        )
+        resolverCache[cacheKey] = resolver
+        return resolver
+    }
+    
+    private static func resolveFilePath(
+        of node: some SyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> Path {
+        guard let location = context.location(of: node, at: .beforeLeadingTrivia, filePathMode: .filePath) else {
+            throw CodeOwnersMacroError("Can't find current file location", "UnknownFilePath")
+        }
+        
+        guard let filePath = location.file.trimmedDescription.data(using: .utf8) else {
+            throw CodeOwnersMacroError("Failed to decode current file location: \(location.file)", "UnknownFilePath")
+        }
+        
+        let file = try JSONDecoder().decode(String.self, from: filePath)
+        return Path(file)
+    }
+    
 }
 
-private struct CodeOwnersMacroError : Error {
-    let message: String
-}
-
-private struct Message : DiagnosticMessage {
+private struct CodeOwnersMacroError : Error, DiagnosticMessage {
     let message: String
     let diagnosticID: MessageID
     let severity: DiagnosticSeverity
+    
+    init(_ message: String, _ messageId: String, _ severity: DiagnosticSeverity = .error) {
+        self.message = message
+        self.diagnosticID = MessageID(domain: "CodeOwnersMacro", id: messageId)
+        self.severity = severity
+    }
+    
 }

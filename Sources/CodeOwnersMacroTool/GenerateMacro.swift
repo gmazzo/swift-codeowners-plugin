@@ -9,27 +9,26 @@ func generateMacro(
 ) throws {
     let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
     let renamesContent = renames
-        .map { (regex, replacement) in "\n                RenameRule(regex: #\"\(regex)\"#, replacement: #\"\(replacement)\"#)" }
+        .map { (regex, replacement) in "\n       RenameRule(regex: #\"\(regex)\"#, replacement: #\"\(replacement)\"#)" }
         .joined(separator: ", ")
     
     let content = """
-    import PathKit
-    import CodeOwnersResolver
     import CodeOwnersMacroBase
+    import CodeOwnersResolver
     
     class CodeOwnersMacro : CodeOwnersMacroBase {
-        static let resolver = {
-            try! resolveCodeOwners(
-                fileContent:
-                #\"""
+        
+        static let fileContent = #\"""
                 \(codeOwnersContent.replacingOccurrences(of: "\n", with: "\n            "))
-                \"""#,
-                root: #"\(codeOwnersRoot.relativePath)"#,
-                renames: [ \(renamesContent) 
-                ]
-            )
-        }()
+                \"""#
+    
+        static let relativePath = #"\(codeOwnersRoot.relativePath)"#
+    
+        static let renames: [RenameRule] = [\(renamesContent) 
+        ]
+    
         static let verbose = \(verbose)
+    
     }
     """
     

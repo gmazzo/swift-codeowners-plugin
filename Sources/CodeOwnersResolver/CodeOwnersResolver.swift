@@ -6,7 +6,7 @@ public struct CodeOwnersResolver : Sendable {
     public let entries: CodeOwners
     
     public func codeOwnersOf(_ file: Path) -> [String]? {
-        guard let relativePath = file.relativePathTo(root) else { return nil }
+        let relativePath = file.relativePathTo(root)
         guard let owners = entries.codeOwner(pattern: relativePath)?.owners else { return nil }
         return owners.map(asLiteral)
     }
