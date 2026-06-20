@@ -20,7 +20,9 @@ public struct Inputs : Sendable {
     }
 }
 
-public struct RenameRule : Sendable {
+public struct RenameRule : Sendable, ExpressibleByArrayLiteral {
+    public typealias ArrayLiteralElement = String
+    
     public let regex: String
     public let replacement: String
     
@@ -28,6 +30,11 @@ public struct RenameRule : Sendable {
         _ = try! Regex(regex) // makes sure it's valid
         self.regex = regex
         self.replacement = replacement
+    }
+    
+    public init(arrayLiteral elements: String...) {
+        precondition(elements.count == 2)
+        self.init(regex: elements[0], replacement: elements[1])
     }
 }
 

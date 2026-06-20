@@ -9,7 +9,7 @@ func generateMacro(
 ) throws {
     let codeOwnersContent = try String(contentsOf: codeOwnersFile, encoding: .utf8)
     let renamesContent = renames
-        .map { (regex, replacement) in "\n       RenameRule(regex: #\"\(regex)\"#, replacement: #\"\(replacement)\"#)" }
+        .map { (regex, replacement) in "\n       [#\"\(regex)\"#, #\"\(replacement)\"#]" }
         .joined(separator: ", ")
     
     let content = """
