@@ -163,12 +163,6 @@ struct CodeOwnersTool: AsyncParsableCommand {
     }
 }
 
-private func asRenameRule(regex: String, replace: String) -> RenameRule {
-    let argument = "\(regex)=\(replace)"
-    if let rule = RenameRule(argument: argument) { return rule }
-    fatalError("Rename rule should be in the <regex>=<replacement> format: \(argument)")
-}
-
 private extension Sequence where Iterator.Element: Hashable {
   func distinct() -> [Iterator.Element] {
     var seen: Set<Iterator.Element> = []
