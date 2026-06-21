@@ -25,16 +25,12 @@ jobs:
         include:
           - name: Plugin
             projectDir: ""
-            moduleTarget: "swift-codeowners-plugin"
           - name: SPM Codegen Demo
             projectDir: "Demos/spm/codegen"
-            moduleTarget: "SPM Codegen Demo"
           - name: SPM Codegen+Macro Demo
             projectDir: "Demos/spm/codegen_and_macro"
-            moduleTarget: "SPM Codegen+Macro Demo"
           - name: SPM Macro Demo
             projectDir: "Demos/spm/macro"
-            moduleTarget: "SPM Macro Demo"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -68,7 +64,7 @@ jobs:
           BUILD_DIR="${COVERAGE_FILE%/*/*}"
           
           llvm-cov export -format="lcov" \
-            "$BUILD_DIR/${{ matrix.moduleTarget }}PackageTests.xctest" \
+            "$BUILD_DIR/${{ matrix.name == 'Plugin' && 'swift-codeowners-plugin' || matrix.name }}PackageTests.xctest" \
             -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info
       - name: Coverage report
         if: ${{ runner.os == 'linux' }}
@@ -85,16 +81,22 @@ jobs:
         include:
           - name: Tuist Codegen Demo
             projectDir: "Demos/tuist/codegen"
-            moduleTarget: "Tuist Codegen Demo"
           - name: Tuist Codegen+Macro Demo
             projectDir: "Demos/tuist/codegen_and_macro"
-            moduleTarget: "Tuist Codegen+Macro Demo"
           - name: Tuist Macro Demo
             projectDir: "Demos/tuist/macro"
-            moduleTarget: "Tuist Macro Demo"
+          - name: Tuist Macro NoPlugin Demo
+            projectDir: "Demos/tuist/macro_no_plugin"
+            localPackageResolutionWorkaround: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Tuist local package resolution workaround
+        if: ${{ matrix.localPackageResolutionWorkaround }}
+        working-directory: ${{ matrix.projectDir }}
+        shell: bash
+        run: |
+          sed -i -e "s/from: \".*\"/revision: \"${GITHUB_REF//\//\\/}\"/g" Package.swift
       - name: Setup Mise
         uses: jdx/mise-action@v4
       - name: Setup Tuist
@@ -105,7 +107,8 @@ jobs:
       - name: Test & Build
         working-directory: ${{ matrix.projectDir }}
         shell: bash
-        run:
+        run: |
+          tuist install
           tuist test --no-selective-testing --result-bundle-path .build/tests.xcresult
       - name: Publish Test Report
         if: ${{ !cancelled() }}
