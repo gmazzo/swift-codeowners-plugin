@@ -70,12 +70,9 @@ extension CodeOwnersMacroBase {
             throw CodeOwnersMacroError("Can't find current file location", "UnknownFilePath")
         }
         
-        guard let filePath = location.file.trimmedDescription.data(using: .utf8) else {
-            throw CodeOwnersMacroError("Failed to decode current file location: \(location.file)", "UnknownFilePath")
-        }
-        
-        let file = try JSONDecoder().decode(String.self, from: filePath)
-        return Path(file)
+        let file = location.file.trimmedDescription
+        let unwrapped = file[file.index(file.startIndex, offsetBy: 1) ..< file.index(file.endIndex, offsetBy: -1)]
+        return Path("\(unwrapped)")
     }
     
 }
