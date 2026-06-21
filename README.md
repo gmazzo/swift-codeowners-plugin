@@ -115,6 +115,10 @@ Finally, import the macro module and use the `#codeowners` macro in your code:
 public macro codeOwners() -> [String]? = #externalMacro(module: "MyMacros", type: "CodeOwnersMacro")
 ```
 
+> [!NOTE]
+> If you are on Tuist: due some limitations between Tuist and SPM, a better integration of the `#codeowners` macro 
+> can be achieved by replacing leveraging pre-build scripts, as shown at [Demos/tuist/macro_no_plugin](./Demos/tuist/macro_no_plugin/README.md)
+
 # The CODEOWNERS file
 
 The expected format is the same
