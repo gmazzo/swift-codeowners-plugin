@@ -7,6 +7,6 @@ let package = Package(
     dependencies: [
         // FIXME This is a workaround on issue of Tuist trying to load unsupported targets
         // .package(path: "../../..")
-        .package(url: "https://github.com/gmazzo/swift-codeowners-plugin", from: "1.3.0"),
+        .package(url: "https://github.com/gmazzo/swift-codeowners-plugin", branch: "main"),
     ],
 )

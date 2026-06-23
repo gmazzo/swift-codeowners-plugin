@@ -19,11 +19,13 @@ struct CodeOwnersMacrosTest {
         
         static let verbose = true
         
+        static let renames: [RenameRule] = [ "devs=users" ]
+        
     }
     
     @Test(arguments: [
-        ("foo/Foo.swift", ["foo-devs"]),
-        ("bar/Bar.swift", ["bar-devs"]),
+        ("foo/Foo.swift", ["foo-users"]),
+        ("bar/Bar.swift", ["bar-users"]),
         ("another.swift", nil),
     ])
     func expansionYieldsOwners(params: (file: String, expectedOwners: [String]?)) throws {

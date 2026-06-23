@@ -8,9 +8,10 @@ let project = Project(
     targets: [
         .target(
             name: "Demo",
-            destinations: .macOS,
+            destinations: .iOS,
             product: .framework,
             bundleId: "dev.tuist.Demo",
+            deploymentTargets: .iOS("16.0"),
             buildableFolders: [.folder("Sources/Demo")],
             dependencies: [
                 .target(name: "Macros"),
@@ -20,9 +21,10 @@ let project = Project(
         ),
         .target(
             name: "DemoTest",
-            destinations: .macOS,
+            destinations: .iOS,
             product: .unitTests,
             bundleId: "io.tuist.FrameworkTest",
+            deploymentTargets: .iOS("16.0"),
             buildableFolders: [.folder("Tests/DemoTests")],
             dependencies: [
                 .target(name: "Demo"),
@@ -30,9 +32,10 @@ let project = Project(
         ),
         .target(
             name: "Macros",
-            destinations: .macOS,
+            destinations: .iOS,
             product: .framework,
             bundleId: "com.glovo.Macros",
+            deploymentTargets: .iOS("16.0"),
             buildableFolders: [.folder("Sources/Macros")],
             dependencies: [
                 .target(name: "MacrosImpl")

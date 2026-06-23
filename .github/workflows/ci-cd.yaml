@@ -96,7 +96,7 @@ jobs:
         working-directory: ${{ matrix.projectDir }}
         shell: bash
         run: |
-          sed -i -e "s/from: \".*\"/revision: \"${GITHUB_REF//\//\\/}\"/g" Package.swift
+          sed -i -e "s/branch: \"main\"/revision: \"${GITHUB_REF//\//\\/}\"/g" Package.swift
       - name: Setup Mise
         uses: jdx/mise-action@v4
       - name: Setup Tuist
