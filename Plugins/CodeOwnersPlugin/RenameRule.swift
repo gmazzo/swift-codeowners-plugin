@@ -1,0 +1,1 @@
+../../Sources/CodeOwnersResolver/RenameRule.swift

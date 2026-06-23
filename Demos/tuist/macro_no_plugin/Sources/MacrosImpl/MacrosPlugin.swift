@@ -15,8 +15,8 @@ class CodeOwnersMacro: CodeOwnersMacroBase {
     static let root = CODEOWNERS_ROOT
 
     static let renames: [RenameRule] = [
-        ["experts", "devs"],
-        ["foo\\w+/bar", "bar"]
+        "experts=devs",
+        "foo\\w+/bar=bar"
     ]
 
     static let verbose = true

@@ -20,24 +20,6 @@ public struct Inputs : Sendable {
     }
 }
 
-public struct RenameRule : Sendable, ExpressibleByArrayLiteral {
-    public typealias ArrayLiteralElement = String
-    
-    public let regex: String
-    public let replacement: String
-    
-    public init(regex: String, replacement: String) {
-        _ = try! Regex(regex) // makes sure it's valid
-        self.regex = regex
-        self.replacement = replacement
-    }
-    
-    public init(arrayLiteral elements: String...) {
-        precondition(elements.count == 2)
-        self.init(regex: elements[0], replacement: elements[1])
-    }
-}
-
 struct SettingsFile : Decodable, Equatable {
     let codeowners: CodeOwners?
     let renames: [String: String]?
