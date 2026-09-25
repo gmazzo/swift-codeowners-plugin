@@ -26,7 +26,7 @@ public func codeOwnersOf(nsClassName: String) -> CodeOwners? {
     return nil
 }
 
-#if os(Linux)
+#if os(Linux) && swift(>=6.4)
 @available(*, deprecated, message: "Call stacks are not fully supported on Linux")
 #endif
 public func codeOwnersFromCallStack(symbols: [String] = Thread.callStackSymbols, demangle: Bool = true) -> CodeOwners? {

@@ -12,7 +12,7 @@ func ownersOfFoo() {
 func testOwnersOfCallStackInFoo() {
     let owners = codeOwnersFromCallStack(symbols: Foo().callStack())
 
-    #if os(Linux)
+    #if os(Linux) && swift(<6.4)
     // Linux does not include method names in call stacks
     #expect(owners == nil)
     #else

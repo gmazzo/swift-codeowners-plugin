@@ -1,5 +1,6 @@
 .build/
 .idea/
 .swiftpm/
+Build/
 Derived/
 Package.resolved
