@@ -35,7 +35,7 @@ struct CodeOwnersAPITest {
     @Test
     func codeOwnersFromCallStackKnown() {
         let stack = DispatchQueue.main.sync { TestClass().doBlock { Thread.callStackSymbols } }
-        #if os(Linux)
+        #if os(Linux) && swift(<6.4)
         // Call stacks are not fully supported on Linux
         let expected: CodeOwners? = nil
         #else

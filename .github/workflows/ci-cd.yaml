@@ -19,13 +19,14 @@ permissions:
 
 jobs:
   build-spm:
-    name: Build (${{ matrix.name }}, Swift ${{ matrix.swift-version }}, ${{ matrix.os }})
+    name: Build (${{ matrix.name }}, ${{ matrix.os }}, Swift ${{ matrix.swift-version }})
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
-        swift-version: [ '6.0', 'latest' ]
         os: [ 'ubuntu', 'macos' ]
+        swift-version: [ '6.0', 'latest' ]
+        name: [ 'Plugin', 'SPM Codegen Demo', 'SPM Codegen+Macro Demo', 'SPM Macro Demo' ]
         include:
           - name: Plugin
             projectDir: ""
@@ -38,10 +39,16 @@ jobs:
         exclude:
           - os: macos
             swift-version: '6.0'
+          # FIXME macros plugin codegen not working on ubuntu after bumping to Swift 6.4.0
+          - os: ubuntu
+            name: 'SPM Macro Demo'
+          - os: ubuntu
+            name: 'SPM Codegen+Macro Demo'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup Swift
+        if: ${{ matrix.os == 'ubuntu' }}
         uses: SwiftyLab/setup-swift@v1
         with:
           swift-version: ${{ matrix.swift-version }}
@@ -62,22 +69,14 @@ jobs:
         with:
           checkName: Test Results (${{ matrix.name }}, Swift ${{ matrix.swift-version }}, ${{ matrix.os }})
           reports: '**/.build/test-results*.xml'
-      - name: Extract coverage data
-        if: ${{ runner.os == 'linux' }}
-        working-directory: ${{ matrix.projectDir }}
-        shell: bash
-        run: |
-          COVERAGE_FILE=$(swift test --show-codecov-path)
-          BUILD_DIR="${COVERAGE_FILE%/*/*}"
-          
-          llvm-cov export -format="lcov" \
-            "$BUILD_DIR/${{ matrix.name == 'Plugin' && 'swift-codeowners-plugin' || matrix.name }}PackageTests.xctest" \
-            -instr-profile "$BUILD_DIR/codecov/default.profdata" > .build/lcov.info
+      - name: Convert Coverage to LCOV
+        uses: sersoft-gmbh/swift-coverage-action@v5
       - name: Coverage report
         if: ${{ runner.os == 'linux' }}
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./.swiftcov/lcov.info
 
   build-tuist:
     name: Build (${{ matrix.name }})
