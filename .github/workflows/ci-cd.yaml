@@ -20,7 +20,7 @@ permissions:
 jobs:
   build-spm:
     name: Build (${{ matrix.name }}, ${{ matrix.os }}, Swift ${{ matrix.swift-version }})
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.runner || format('{0}-latest', matrix.os) }}
     strategy:
       fail-fast: false
       matrix:
@@ -36,6 +36,9 @@ jobs:
             projectDir: "Demos/spm/codegen_and_macro"
           - name: SPM Macro Demo
             projectDir: "Demos/spm/macro"
+          - os: ubuntu
+            swift-version: '6.0'
+            runner: ubuntu-24.04
         exclude:
           - os: macos
             swift-version: '6.0'
